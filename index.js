@@ -23,6 +23,7 @@ const {
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
   GOOGLE_REDIRECT_URI = "http://localhost:4000/auth/google/callback",
+  FRONT_URL,
 } = process.env;
 
 // Minimal scope for listing courses:
@@ -93,7 +94,8 @@ app.get("/auth/google/callback", async (req, res) => {
   tokenStore.expires_at = Date.now() + (tokenJson.expires_in * 1000);
 
   // Redirect back to React UI
-  res.redirect("http://localhost:5174/?connected=1");
+  const frontendUrl = FRONT_URL || "http://localhost:5174";
+  res.redirect(`${frontendUrl}/?connected=1`);
 });
 
 app.get("/api/me", async (req, res) => {
