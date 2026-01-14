@@ -1,0 +1,14 @@
+{
+    "name": "classroom-test-server",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "dev": "nodemon index.js"
+    },
+    "dependencies": {
+        "cors": "^2.8.5",
+        "dotenv": "^17.2.3",
+        "express": "^4.19.2",
+        "nodemon": "^3.1.11"
+    }
+}

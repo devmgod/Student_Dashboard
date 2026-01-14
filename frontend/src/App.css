@@ -1,0 +1,1674 @@
+/* Global OpenDyslexic Font Application - Dyslexia-Friendly */
+.app-container *,
+.app-container *::before,
+.app-container *::after {
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+}
+
+/* App Container - High Contrast, Reduced Visual Noise */
+.app-container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: 100vh;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Top Bar with Profile Card */
+.top-bar {
+  width: 100%;
+  max-width: 100%;
+  background: #ffffff;
+  border-bottom: 3px solid #000000;
+  padding: 1rem 2rem;
+  margin-bottom: 2rem;
+  box-sizing: border-box;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.top-bar-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  gap: 2rem;
+}
+
+.top-bar-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.top-bar-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #000000;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  letter-spacing: 0.03em;
+  line-height: 1.6;
+}
+
+.top-bar-right {
+  flex-shrink: 0;
+}
+
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+  background: #ffffff;
+  border: 3px solid #000000;
+  border-radius: 2rem;
+  transition: all 0.2s ease;
+  cursor: default;
+}
+
+.profile-card:hover {
+  background: #f5f5f5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.profile-picture {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #000000;
+  flex-shrink: 0;
+}
+
+.profile-picture-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000000;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 20px;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  letter-spacing: 0.03em;
+  border: 2px solid #000000;
+}
+
+.profile-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #000000;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  letter-spacing: 0.03em;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+/* Header Styles */
+.app-header {
+  text-align: center;
+  padding: 2rem 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.app-title {
+  margin: 0 0 1rem 0;
+  font-size: 32px;
+  padding: 1rem;
+  font-weight: 700;
+  color: #000000;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  letter-spacing: 0.03em;
+  line-height: 1.6;
+}
+
+.app-subtitle {
+  margin: 0;
+  font-size: 20px;
+  color: #000000;
+  font-weight: 400;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  line-height: 1.8;
+  letter-spacing: 0.03em;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  border-radius: 0.5rem;
+  font-size: 20px;
+  font-weight: 700;
+  text-decoration: none;
+  border: 3px solid #000000;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  letter-spacing: 0.03em;
+  line-height: 1.8;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: #000000;
+  color: #ffffff;
+  border-color: #000000;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #333333;
+  border-color: #333333;
+}
+
+.btn-secondary {
+  background: #ffffff;
+  color: #000000;
+  border-color: #000000;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #f5f5f5;
+  border-color: #000000;
+}
+
+/* Error Message - High Contrast */
+.error-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: #ffffff;
+  border: 3px solid #000000;
+  border-radius: 0.5rem;
+  color: #000000;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  font-size: 18px;
+  line-height: 1.8;
+}
+
+/* Loading Spinner */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  margin: 2rem 0;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #cccccc;
+  border-top-color: #000000;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-text {
+  color: #000000;
+  font-size: 1rem;
+  margin: 0;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+}
+
+/* Data Cards - High Contrast, Reduced Visual Noise */
+.data-card {
+  background: #ffffff;
+  border-radius: 0.5rem;
+  border: 3px solid #000000;
+  margin-bottom: 2rem;
+  overflow: hidden;
+  width: 66.67%;
+  max-width: 100%;
+  box-sizing: border-box;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+}
+
+.card-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 3px solid #000000;
+  background: #ffffff;
+}
+
+.kanban-card .card-header {
+  padding: 2rem;
+  background: linear-gradient(to bottom, #ffffff, #f9fafb);
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #000000;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  letter-spacing: 0.03em;
+  line-height: 1.6;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  padding: 0.25rem 0.75rem;
+  background: #000000;
+  color: #ffffff;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  border: 2px solid #000000;
+}
+
+.card-content {
+  padding: 2rem;
+  overflow-x: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.card-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  min-height: 200px;
+  width: 100%;
+}
+
+.card-loading .spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #cccccc;
+  border-top-color: #000000;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+  flex-shrink: 0;
+}
+
+.card-loading .loading-text {
+  color: #000000;
+  font-size: 0.95rem;
+  margin: 0;
+  text-align: center;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+}
+
+.json-display {
+  margin: 0;
+  padding: 1rem;
+  background: #1e293b;
+  color: #e2e8f0;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  max-height: 500px;
+  overflow-y: auto;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.json-display::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.json-display::-webkit-scrollbar-track {
+  background: #0f172a;
+  border-radius: 4px;
+}
+
+.json-display::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+
+.json-display::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+.empty-state {
+  margin: 0;
+  padding: 2rem;
+  text-align: center;
+  color: #000000;
+  font-style: normal;
+  background: #ffffff;
+  border-radius: 0.5rem;
+  border: 3px solid #000000;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* Courses List */
+.courses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.course-item {
+  border: 3px solid #000000;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: white;
+  margin-bottom: 0.5rem;
+}
+
+.course-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  background: #ffffff;
+  border-bottom: 2px solid #cccccc;
+}
+
+.course-header:hover {
+  background: #f5f5f5;
+}
+
+.course-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.course-name {
+  font-weight: 700;
+  color: #000000;
+  font-size: 20px;
+  margin-bottom: 0.5rem;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  letter-spacing: 0.03em;
+  line-height: 1.8;
+}
+
+.course-section {
+  font-size: 18px;
+  color: #000000;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  line-height: 1.8;
+  letter-spacing: 0.03em;
+}
+
+.badge-small {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  min-width: 1.5rem;
+  height: 1.5rem;
+}
+
+.course-work-container {
+  padding: 1rem;
+  background: #ffffff;
+  border-top: 2px solid #cccccc;
+}
+
+.course-work-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.course-work-item {
+  border: 2px solid #000000;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: white;
+  margin-bottom: 0.5rem;
+}
+
+.course-work-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  background: white;
+  border-bottom: 2px solid #cccccc;
+}
+
+.course-work-header:hover {
+  background: #f5f5f5;
+}
+
+.course-work-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.course-work-title {
+  font-weight: 700;
+  color: #000000;
+  font-size: 19px;
+  margin-bottom: 0.5rem;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  letter-spacing: 0.03em;
+  line-height: 1.8;
+}
+
+.course-work-meta {
+  font-size: 17px;
+  color: #000000;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  line-height: 1.8;
+  letter-spacing: 0.03em;
+}
+
+.course-work-status {
+  font-size: 17px;
+  color: #000000;
+  font-weight: 600;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  line-height: 1.8;
+  letter-spacing: 0.03em;
+  margin-top: 0.5rem;
+}
+
+.submissions-container {
+  padding: 1rem;
+  background: #ffffff;
+  border-top: 2px solid #cccccc;
+}
+
+.nested-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  color: #000000;
+  font-size: 0.875rem;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+}
+
+.nested-error {
+  padding: 1rem;
+  color: #000000;
+  background: #ffffff;
+  border: 3px solid #dc2626;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  font-weight: 600;
+}
+
+.nested-empty {
+  padding: 1rem;
+  text-align: center;
+  color: #000000;
+  font-style: normal;
+  font-size: 0.875rem;
+  background: white;
+  border: 3px solid #000000;
+  border-radius: 0.5rem;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+}
+
+.nested-json {
+  font-size: 0.8125rem;
+  padding: 0.75rem;
+  max-height: 400px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .app-container {
+    padding: 1rem;
+    overflow-x: hidden;
+  }
+
+  .top-bar {
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .top-bar-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .top-bar-title {
+    font-size: 20px;
+  }
+
+  .top-bar-right {
+    width: 100%;
+  }
+
+  .profile-card {
+    padding: 0.5rem 0.75rem;
+    gap: 0.75rem;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .profile-picture,
+  .profile-picture-initials {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  .profile-name {
+    font-size: 16px;
+  }
+
+  .app-title {
+    font-size: 26px;
+    word-wrap: break-word;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+    max-width: 100%;
+  }
+
+  .data-card {
+    margin-bottom: 1.5rem;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .card-header,
+  .card-content {
+    padding: 1rem;
+    max-width: 100%;
+  }
+
+  .json-display {
+    font-size: 0.75rem;
+    padding: 0.75rem;
+  }
+}
+
+/* Kanban Board Styles - Dyslexia-Friendly, High Contrast */
+.kanban-card {
+  width: 95%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.kanban-content {
+  padding: 0;
+  overflow-x: visible;
+}
+
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  width: 100%;
+  padding: 2rem;
+  background: #f9fafb;
+  min-height: 600px;
+}
+
+.kanban-column {
+  display: flex;
+  flex-direction: column;
+  min-height: 500px;
+  background: #ffffff;
+  border: 4px solid #000000;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kanban-column:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Column-specific styling for better visual distinction */
+.kanban-column:nth-child(1) .kanban-column-header {
+  background: linear-gradient(to bottom, #ffffff, #fef3c7);
+}
+
+.kanban-column:nth-child(2) .kanban-column-header {
+  background: linear-gradient(to bottom, #ffffff, #dbeafe);
+}
+
+.kanban-column:nth-child(3) .kanban-column-header {
+  background: linear-gradient(to bottom, #ffffff, #dcfce7);
+}
+
+.kanban-column-header {
+  padding: 1.75rem 2rem;
+  border-bottom: 4px solid #000000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 24px;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  letter-spacing: 0.05em;
+  background: #ffffff;
+  color: #000000;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.kanban-column-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  letter-spacing: 0.05em;
+  color: #000000;
+  line-height: 1.6;
+  text-transform: uppercase;
+}
+
+.kanban-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.625rem;
+  background: #000000;
+  color: #ffffff;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  border: 2px solid #000000;
+}
+
+.kanban-column-content {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  background: #ffffff;
+}
+
+.kanban-column-content::-webkit-scrollbar {
+  width: 10px;
+}
+
+.kanban-column-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 5px;
+}
+
+.kanban-column-content::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 5px;
+}
+
+.kanban-column-content::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.kanban-card-item {
+  background: #ffffff;
+  border: 4px solid #000000;
+  border-radius: 0.625rem;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: all 0.2s ease;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.kanban-card-item:hover {
+  background: #f9fafb;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.kanban-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.kanban-course-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 700;
+  font-size: 17px;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  letter-spacing: 0.04em;
+  border: 3px solid;
+  line-height: 1.8;
+  text-transform: uppercase;
+  min-height: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kanban-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.kanban-card-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #000000;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  letter-spacing: 0.04em;
+  line-height: 1.8;
+}
+
+.kanban-card-due {
+  font-size: 18px;
+  color: #000000;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  letter-spacing: 0.04em;
+  line-height: 1.8;
+  font-weight: 600;
+}
+
+.kanban-card-due strong {
+  font-weight: 700;
+  color: #000000;
+}
+
+.kanban-submitted-confirmation {
+  font-size: 18px;
+  color: #15803d;
+  font-weight: 700;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  letter-spacing: 0.03em;
+  line-height: 1.8;
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: #dcfce7;
+  border: 3px solid #15803d;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Submit Button */
+.btn-submit-assignment {
+  margin-top: 1rem;
+  padding: 1rem 1.5rem;
+  background: #15803d;
+  color: #ffffff;
+  border: 4px solid #15803d;
+  border-radius: 0.5rem;
+  font-size: 19px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  letter-spacing: 0.04em;
+  line-height: 1.8;
+  width: 100%;
+  text-transform: uppercase;
+}
+
+.btn-submit-assignment:hover {
+  background: #16a34a;
+  border-color: #16a34a;
+}
+
+.btn-submit-assignment:active {
+  background: #15803d;
+  transform: scale(0.98);
+}
+
+/* Submitted Card Styling */
+.kanban-card-submitted {
+  background: #f0fdf4;
+  border-color: #15803d;
+}
+
+.kanban-card-submitted .kanban-card-header {
+  background: #dcfce7;
+}
+
+.submitted-checkmark-icon {
+  font-size: 28px;
+  color: #15803d;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* Submission Checkmark Overlay */
+.submission-checkmark-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(220, 252, 231, 0.95);
+  border: 4px solid #15803d;
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  animation: fadeInCheckmark 0.3s ease-out;
+}
+
+@keyframes fadeInCheckmark {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.kanban-card-item {
+  position: relative;
+}
+
+.kanban-card-item.just-submitted {
+  animation: cardSubmitted 0.5s ease-out;
+}
+
+@keyframes cardSubmitted {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.checkmark-circle {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 1.5rem;
+  animation: scaleIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes scaleIn {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.checkmark-svg {
+  width: 120px;
+  height: 120px;
+}
+
+.checkmark-circle-bg {
+  stroke: #15803d;
+  stroke-width: 3;
+  stroke-miterlimit: 10;
+  fill: none;
+  animation: strokeCircle 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+@keyframes strokeCircle {
+  0% {
+    stroke-dasharray: 0 157;
+  }
+  100% {
+    stroke-dasharray: 157 157;
+  }
+}
+
+.checkmark-check {
+  stroke: #15803d;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-miterlimit: 10;
+  animation: strokeCheck 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.5s forwards;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+}
+
+@keyframes strokeCheck {
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.submission-success-text {
+  font-size: 32px;
+  font-weight: 700;
+  color: #15803d;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  letter-spacing: 0.03em;
+  animation: fadeInText 0.3s ease-out 0.6s forwards;
+  opacity: 0;
+}
+
+@keyframes fadeInText {
+  to {
+    opacity: 1;
+  }
+}
+
+.kanban-empty {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: #6b7280;
+  font-style: italic;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  font-size: 16px;
+  border: 2px dashed #d1d5db;
+  border-radius: 0.5rem;
+  background: #f9fafb;
+  margin: 1rem 0;
+}
+
+/* Due Date Awareness Summary */
+.due-date-summary {
+  display: flex;
+  gap: 1.5rem;
+  padding: 2rem;
+  border-bottom: 3px solid #000000;
+  background: #ffffff;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.due-date-summary-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.due-date-badge {
+  display: inline-block;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  font-size: 17px;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  letter-spacing: 0.04em;
+  line-height: 1.6;
+  border: 3px solid;
+  text-transform: uppercase;
+}
+
+.due-date-today {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #f59e0b;
+}
+
+.due-date-week {
+  background: #dbeafe;
+  color: #1e40af;
+  border-color: #3b82f6;
+}
+
+.due-date-later {
+  background: #f3f4f6;
+  color: #374151;
+  border-color: #6b7280;
+}
+
+.due-date-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.625rem;
+  background: #000000;
+  color: #ffffff;
+  border-radius: 0.25rem;
+  font-size: 16px;
+  font-weight: 700;
+  min-width: 2rem;
+  height: 2rem;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  border: 2px solid #000000;
+}
+
+/* Due Date Indicator on Cards */
+.due-date-indicator {
+  display: inline-block;
+  padding: 0.5rem 0.875rem;
+  border-radius: 0.375rem;
+  font-weight: 700;
+  font-size: 15px;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  letter-spacing: 0.03em;
+  line-height: 1.5;
+  border: 3px solid;
+  margin-left: auto;
+}
+
+.due-date-indicator-today {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #f59e0b;
+}
+
+.due-date-indicator-thisWeek {
+  background: #dbeafe;
+  color: #1e40af;
+  border-color: #3b82f6;
+}
+
+.due-date-indicator-later {
+  background: #f3f4f6;
+  color: #374151;
+  border-color: #6b7280;
+}
+
+/* Responsive Kanban Board */
+@media (max-width: 1024px) {
+  .kanban-board {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+
+  .kanban-column {
+    min-height: 350px;
+  }
+}
+
+@media (max-width: 768px) {
+  .kanban-card {
+    width: 100%;
+  }
+
+  .kanban-content {
+    padding: 1rem;
+  }
+
+  .kanban-column-header {
+    padding: 0.875rem 1rem;
+    font-size: 18px;
+  }
+
+  .kanban-card-item {
+    padding: 0.875rem;
+  }
+
+  .kanban-card-title {
+    font-size: 16px;
+  }
+
+  .due-date-summary {
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+
+  .due-date-badge {
+    font-size: 14px;
+    padding: 0.375rem 0.75rem;
+  }
+
+  .due-date-count {
+    font-size: 14px;
+    min-width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .due-date-indicator {
+    font-size: 12px;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+/* Tutor/Parent View - Calm, Supportive Design */
+.tutor-view {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Summary Dashboard */
+.tutor-summary-dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.tutor-summary-card {
+  background: #ffffff;
+  border: 3px solid #000000;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tutor-summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.tutor-summary-progress {
+  grid-column: span 2;
+  border-color: #2563eb;
+  background: linear-gradient(to bottom right, #ffffff, #eff6ff);
+}
+
+.tutor-summary-pending {
+  border-color: #f59e0b;
+  background: linear-gradient(to bottom right, #ffffff, #fffbeb);
+}
+
+.tutor-summary-due-today {
+  border-color: #dc2626;
+  background: linear-gradient(to bottom right, #ffffff, #fef2f2);
+}
+
+.tutor-summary-due-week {
+  border-color: #3b82f6;
+  background: linear-gradient(to bottom right, #ffffff, #eff6ff);
+}
+
+.tutor-summary-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.tutor-summary-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.tutor-summary-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  letter-spacing: 0.02em;
+  line-height: 1.5;
+}
+
+.tutor-summary-value {
+  font-size: 36px;
+  font-weight: 700;
+  color: #000000;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.tutor-summary-value-large {
+  font-size: 48px;
+  font-weight: 700;
+  color: #000000;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.tutor-summary-sublabel {
+  font-size: 14px;
+  color: #6b7280;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  line-height: 1.5;
+}
+
+.tutor-progress-bar {
+  width: 100%;
+  height: 12px;
+  background: #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 2px solid #d1d5db;
+  margin: 0.5rem 0;
+}
+
+.tutor-progress-fill {
+  height: 100%;
+  background: linear-gradient(to right, #2563eb, #3b82f6);
+  border-radius: 6px;
+  transition: width 0.3s ease;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.tutor-view-header {
+  text-align: center;
+  padding: 2rem 0;
+  border-bottom: 2px solid #e5e7eb;
+  margin-bottom: 1rem;
+}
+
+.tutor-view-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 32px;
+  font-weight: 600;
+  color: #1f2937;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  letter-spacing: 0.02em;
+  line-height: 1.5;
+}
+
+.tutor-view-subtitle {
+  margin: 0;
+  font-size: 18px;
+  color: #6b7280;
+  font-weight: 400;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  line-height: 1.6;
+}
+
+.tutor-section {
+  background: #fafafa;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.tutor-section:hover {
+  border-color: #d1d5db;
+}
+
+.tutor-section-header {
+  padding: 1.5rem 2rem;
+  background: #ffffff;
+  border-bottom: 2px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tutor-section-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #1f2937;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  letter-spacing: 0.02em;
+  line-height: 1.5;
+}
+
+.tutor-section-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.375rem 0.875rem;
+  background: #e5e7eb;
+  color: #374151;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  min-width: 2rem;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+}
+
+.tutor-section-content {
+  padding: 1.5rem 2rem;
+}
+
+.tutor-assignment-list,
+.tutor-deadline-list,
+.tutor-submitted-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tutor-assignment-item,
+.tutor-deadline-item,
+.tutor-submitted-item {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.tutor-assignment-item:hover,
+.tutor-deadline-item:hover,
+.tutor-submitted-item:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.tutor-assignment-header,
+.tutor-deadline-date,
+.tutor-submitted-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.tutor-course-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 700;
+  font-size: 15px;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  letter-spacing: 0.04em;
+  line-height: 1.6;
+  border: 3px solid;
+  text-transform: uppercase;
+  min-height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tutor-due-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  letter-spacing: 0.02em;
+}
+
+.tutor-due-today {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.tutor-due-thisWeek {
+  background: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.tutor-due-later {
+  background: #f0f9ff;
+  color: #1e40af;
+  border: 1px solid #bae6fd;
+}
+
+.tutor-assignment-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tutor-assignment-title,
+.tutor-deadline-title,
+.tutor-submitted-title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  color: #000000;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  letter-spacing: 0.04em;
+  line-height: 1.6;
+}
+
+.tutor-assignment-due,
+.tutor-assignment-status {
+  font-size: 15px;
+  color: #6b7280;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  line-height: 1.6;
+}
+
+.tutor-deadline-date {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+}
+
+.tutor-deadline-days {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.tutor-deadline-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.tutor-deadline-course {
+  font-size: 16px;
+  font-weight: 700;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  letter-spacing: 0.03em;
+}
+
+.tutor-submitted-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 0;
+}
+
+.tutor-submitted-icon {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #dcfce7;
+  color: #15803d;
+  border-radius: 50%;
+  font-size: 1.125rem;
+  font-weight: 700;
+  border: 2px solid #86efac;
+}
+
+.tutor-submitted-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tutor-submitted-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 14px;
+  color: #6b7280;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+}
+
+.tutor-submitted-course {
+  font-weight: 700;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  font-size: 15px;
+  letter-spacing: 0.03em;
+}
+
+.tutor-submitted-due {
+  color: #9ca3af;
+}
+
+.tutor-empty-state {
+  padding: 2rem;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 16px;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+  font-style: italic;
+  line-height: 1.6;
+}
+
+/* Responsive adjustments for Tutor/Parent View */
+@media (max-width: 768px) {
+  .tutor-view {
+    padding: 1rem 0;
+    gap: 1.5rem;
+  }
+
+  .tutor-view-header {
+    padding: 1.5rem 0;
+  }
+
+  .tutor-view-title {
+    font-size: 26px;
+  }
+
+  .tutor-view-subtitle {
+    font-size: 16px;
+  }
+
+  .tutor-summary-dashboard {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .tutor-summary-progress {
+    grid-column: span 1;
+  }
+
+  .tutor-summary-card {
+    padding: 1.25rem;
+  }
+
+  .tutor-summary-icon {
+    font-size: 2rem;
+  }
+
+  .tutor-summary-value {
+    font-size: 32px;
+  }
+
+  .tutor-summary-value-large {
+    font-size: 40px;
+  }
+
+  .tutor-section-header {
+    padding: 1rem 1.5rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .tutor-section-title {
+    font-size: 20px;
+  }
+
+  .tutor-section-content {
+    padding: 1rem 1.5rem;
+  }
+
+  .tutor-assignment-item,
+  .tutor-deadline-item,
+  .tutor-submitted-item {
+    padding: 1rem;
+  }
+
+  .tutor-assignment-title,
+  .tutor-deadline-title,
+  .tutor-submitted-title {
+    font-size: 16px;
+  }
+}
