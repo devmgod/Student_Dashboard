@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 
+const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
 export const mockCourses = [
   {
     id: "course_math",
@@ -115,11 +117,11 @@ export default function App() {
     setErr("");
     setLoading(true);
     try {
-      const meRes = await fetch("http://localhost:4000/api/me");
+      const meRes = await fetch(`${API}/api/me`);
       const meJson = await meRes.json();
       if (!meRes.ok) throw new Error(JSON.stringify(meJson));
 
-      const cRes = await fetch("http://localhost:4000/api/courses");
+      const cRes = await fetch(`${API}/api/courses`);
       const cJson = await cRes.json();
       if (!cRes.ok) throw new Error(JSON.stringify(cJson));
 
@@ -161,7 +163,7 @@ export default function App() {
     }));
 
     try {
-      const res = await fetch(`http://localhost:4000/api/courses/${courseId}/courseWork`);
+      const res = await fetch(`${API}/api/courses/${courseId}/courseWork`);
       const json = await res.json();
       if (!res.ok) throw new Error(JSON.stringify(json));
 
@@ -210,7 +212,7 @@ export default function App() {
     }));
 
     try {
-      const res = await fetch(`http://localhost:4000/api/courses/${courseId}/courseWork/${workId}/submissions`);
+      const res = await fetch(`${API}/api/courses/${courseId}/courseWork/${workId}/submissions`);
       const json = await res.json();
       if (!res.ok) throw new Error(JSON.stringify(json));
 
@@ -621,7 +623,7 @@ export default function App() {
 
       <div className="action-buttons">
         <a
-          href="http://localhost:4000/auth/google"
+          href={`${API}/auth/google`}
           className="btn btn-primary"
           disabled={loading}
         >

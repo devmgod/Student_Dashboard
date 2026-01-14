@@ -6,7 +6,17 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-app.use(cors({ origin: "http://localhost:5174", credentials: true }));
+
+const allowedOrigins = [
+  "https://student-dashboard-1-6w26.onrender.com",
+  "http://localhost:5173",
+  "http://localhost:5174"
+];
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
 
 // ====== CONFIG (set these in env) ======
 const {
