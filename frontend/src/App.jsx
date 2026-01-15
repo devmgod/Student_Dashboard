@@ -3,6 +3,91 @@ import "./App.css";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
+// Subtasks Component
+function TaskSubtasks({ taskId, subtasks, onAddSubtask, onToggleSubtask, onDeleteSubtask }) {
+  const [newSubtaskText, setNewSubtaskText] = useState("");
+  const [showAddSubtask, setShowAddSubtask] = useState(false);
+
+  const handleAdd = () => {
+    if (newSubtaskText.trim()) {
+      onAddSubtask(taskId, newSubtaskText);
+      setNewSubtaskText("");
+      setShowAddSubtask(false);
+    }
+  };
+
+  const completedCount = subtasks.filter(s => s.completed).length;
+  const totalCount = subtasks.length;
+
+  return (
+    <div className="task-subtasks">
+      <div className="task-subtasks-header">
+        <span className="task-subtasks-title">Subtasks</span>
+        {totalCount > 0 && (
+          <span className="task-subtasks-count">
+            {completedCount} / {totalCount}
+          </span>
+        )}
+        <button
+          className={`btn-add-subtask ${showAddSubtask ? 'btn-add-subtask-open' : ''}`}
+          onClick={() => setShowAddSubtask(!showAddSubtask)}
+          title={showAddSubtask ? "Close" : "Add subtask"}
+        >
+          {showAddSubtask ? "−" : "+"}
+        </button>
+      </div>
+      
+      {showAddSubtask && (
+        <div className="task-subtasks-add">
+          <input
+            type="text"
+            className="task-subtasks-input"
+            placeholder="Enter subtask..."
+            value={newSubtaskText}
+            onChange={(e) => setNewSubtaskText(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleAdd();
+              }
+            }}
+            autoFocus
+          />
+          <button
+            className="btn-subtask-add"
+            onClick={handleAdd}
+          >
+            Add
+          </button>
+        </div>
+      )}
+
+      {subtasks.length > 0 && (
+        <div className="task-subtasks-list">
+          {subtasks.map((subtask) => (
+            <div key={subtask.id} className={`task-subtask-item ${subtask.completed ? 'completed' : ''}`}>
+              <label className="task-subtask-checkbox">
+                <input
+                  type="checkbox"
+                  checked={subtask.completed}
+                  onChange={() => onToggleSubtask(taskId, subtask.id)}
+                />
+                <span className="task-subtask-text">{subtask.text}</span>
+              </label>
+              <button
+                className="btn-subtask-delete"
+                onClick={() => onDeleteSubtask(taskId, subtask.id)}
+                title="Delete subtask"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export const mockCourses = [
   {
     id: "course_math",
@@ -73,6 +158,9 @@ export default function App() {
   const [recentlySubmitted, setRecentlySubmitted] = useState(new Set()); // Track IDs of recently submitted assignments
   const [mockAssignmentsState, setMockAssignmentsState] = useState([...mockAssignments]);
   const [viewMode, setViewMode] = useState("student"); // "student" or "tutor"
+  const [customTasks, setCustomTasks] = useState([]); // Custom tasks added manually
+  const [showAddTaskModal, setShowAddTaskModal] = useState(false); // Modal for adding custom tasks
+  const [taskSubtasks, setTaskSubtasks] = useState({}); // { taskId: [{ id, text, completed }] }
 
   function loadMockData() {
     setErr("");
@@ -127,10 +215,50 @@ export default function App() {
 
       setMe(meJson);
       setCourses(cJson);
+      
+      // Load custom tasks from database
+      await loadCustomTasks();
     } catch (e) {
       setErr(String(e.message || e));
     } finally {
       setLoading(false);
+    }
+  }
+
+  // Load custom tasks from database
+  async function loadCustomTasks() {
+    try {
+      const res = await fetch(`${API}/api/custom-tasks`);
+      if (res.ok) {
+        const tasks = await res.json();
+        setCustomTasks(tasks.map(task => ({
+          ...task,
+          isCustom: true
+        })));
+        
+        // Load subtasks for all custom tasks
+        for (const task of tasks) {
+          await loadSubtasks(task.id);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading custom tasks:", error);
+    }
+  }
+
+  // Load subtasks for a specific task
+  async function loadSubtasks(taskId) {
+    try {
+      const res = await fetch(`${API}/api/tasks/${taskId}/subtasks`);
+      if (res.ok) {
+        const subtasks = await res.json();
+        setTaskSubtasks(prev => ({
+          ...prev,
+          [taskId]: subtasks
+        }));
+      }
+    } catch (error) {
+      console.error("Error loading subtasks:", error);
     }
   }
 
@@ -252,8 +380,38 @@ export default function App() {
   }
 
   // Function to submit an assignment
-  function handleSubmitAssignment(taskId) {
-    if (useMockData) {
+  async function handleSubmitAssignment(taskId) {
+    // Check if this is a custom task
+    const customTask = customTasks.find(t => t.id === taskId);
+    
+    if (customTask) {
+      // Update custom task in database
+      try {
+        const res = await fetch(`${API}/api/custom-tasks/${taskId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            title: customTask.title,
+            courseId: customTask.courseId,
+            courseName: customTask.courseName,
+            dueDate: customTask.dueDate,
+            dueText: "Submitted",
+            status: "SUBMITTED",
+          }),
+        });
+
+        if (res.ok) {
+          const updatedTask = await res.json();
+          setCustomTasks(prev => prev.map(t => 
+            t.id === taskId ? { ...updatedTask, isCustom: true } : t
+          ));
+        }
+      } catch (error) {
+        console.error("Error updating custom task:", error);
+      }
+    } else if (useMockData) {
       // Update mock assignments state
       const updatedAssignments = mockAssignmentsState.map(assignment => 
         assignment.id === taskId 
@@ -318,7 +476,7 @@ export default function App() {
     
     if (useMockData) {
       // If using mock data, return mock assignments state directly
-      return mockAssignmentsState.map(assignment => ({
+      const mockAssignmentsList = mockAssignmentsState.map(assignment => ({
         id: assignment.id,
         courseId: assignment.courseId,
         courseName: assignment.courseName,
@@ -326,7 +484,10 @@ export default function App() {
         dueDate: assignment.dueDate,
         dueText: assignment.dueText,
         status: assignment.status,
+        isCustom: false,
       }));
+      // Add custom tasks
+      return [...mockAssignmentsList, ...customTasks];
     }
     
     // Collect all assignments from courseWork state
@@ -343,12 +504,14 @@ export default function App() {
             dueDate: assignment.dueDate,
             dueText: assignment.dueText,
             status: assignment.status,
+            isCustom: false,
           });
         });
       }
     });
     
-    return allAssignments;
+    // Add custom tasks
+    return [...allAssignments, ...customTasks];
   }
 
   // Helper function to calculate luminance for contrast
@@ -561,6 +724,17 @@ export default function App() {
     if (connected) load();
   }, []);
 
+  // Load subtasks when custom tasks are loaded
+  useEffect(() => {
+    if (customTasks.length > 0) {
+      customTasks.forEach(task => {
+        if (!taskSubtasks[task.id]) {
+          loadSubtasks(task.id);
+        }
+      });
+    }
+  }, [customTasks]);
+
   // Helper function to get user initials
   function getUserInitials(name) {
     if (!name) return "?";
@@ -577,6 +751,124 @@ export default function App() {
       return "Test User";
     }
     return me?.name || "Guest";
+  }
+
+  // Function to add a custom task
+  async function handleAddCustomTask(taskData) {
+    try {
+      const res = await fetch(`${API}/api/custom-tasks`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: taskData.title,
+          courseId: taskData.courseId || 'custom',
+          courseName: taskData.courseName || 'Custom',
+          dueDate: taskData.dueDate || null,
+          dueText: taskData.dueText || null,
+          status: taskData.status || 'PENDING',
+        }),
+      });
+
+      if (res.ok) {
+        const newTask = await res.json();
+        setCustomTasks(prev => [...prev, { ...newTask, isCustom: true }]);
+        setShowAddTaskModal(false);
+      } else {
+        const error = await res.json();
+        alert(`Failed to create task: ${error.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error("Error creating custom task:", error);
+      alert("Failed to create task. Please try again.");
+    }
+  }
+
+  // Function to add a subtask to a task
+  async function handleAddSubtask(taskId, subtaskText) {
+    if (!subtaskText.trim()) return;
+    
+    try {
+      const res = await fetch(`${API}/api/tasks/${taskId}/subtasks`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: subtaskText.trim(),
+        }),
+      });
+
+      if (res.ok) {
+        const newSubtask = await res.json();
+        setTaskSubtasks(prev => ({
+          ...prev,
+          [taskId]: [...(prev[taskId] || []), newSubtask]
+        }));
+      } else {
+        const error = await res.json();
+        console.error("Failed to create subtask:", error);
+      }
+    } catch (error) {
+      console.error("Error creating subtask:", error);
+    }
+  }
+
+  // Function to toggle subtask completion
+  async function handleToggleSubtask(taskId, subtaskId) {
+    try {
+      const res = await fetch(`${API}/api/tasks/${taskId}/subtasks/${subtaskId}/toggle`, {
+        method: 'PATCH',
+      });
+
+      if (res.ok) {
+        const updatedSubtask = await res.json();
+        setTaskSubtasks(prev => ({
+          ...prev,
+          [taskId]: (prev[taskId] || []).map(subtask =>
+            subtask.id === subtaskId ? updatedSubtask : subtask
+          )
+        }));
+      } else {
+        const error = await res.json();
+        console.error("Failed to toggle subtask:", error);
+      }
+    } catch (error) {
+      console.error("Error toggling subtask:", error);
+    }
+  }
+
+  // Function to delete a subtask
+  async function handleDeleteSubtask(taskId, subtaskId) {
+    try {
+      const res = await fetch(`${API}/api/tasks/${taskId}/subtasks/${subtaskId}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        setTaskSubtasks(prev => ({
+          ...prev,
+          [taskId]: (prev[taskId] || []).filter(subtask => subtask.id !== subtaskId)
+        }));
+      } else {
+        const error = await res.json();
+        console.error("Failed to delete subtask:", error);
+      }
+    } catch (error) {
+      console.error("Error deleting subtask:", error);
+    }
+  }
+
+  // Function to get subtasks for a task
+  function getSubtasks(taskId) {
+    const subtasks = taskSubtasks[taskId] || [];
+    // Load subtasks if not already loaded (for Google Classroom tasks)
+    if (subtasks.length === 0 && !taskId.startsWith('custom_')) {
+      // For Google Classroom tasks, we can still add subtasks but they won't persist
+      // This is fine - subtasks work for both custom and Google Classroom tasks
+    }
+    return subtasks;
   }
 
   // Helper function to get profile picture URL
@@ -996,6 +1288,12 @@ export default function App() {
             <h3 className="card-title">
               Assignment Dashboard
             </h3>
+            <button
+              onClick={() => setShowAddTaskModal(true)}
+              className="btn btn-primary btn-add-task"
+            >
+              + Add Custom Task
+            </button>
           </div>
           
           {/* Due Date Awareness Summary */}
@@ -1070,6 +1368,14 @@ export default function App() {
                                 : new Date(task.dueDate.year, task.dueDate.month - 1, task.dueDate.day).toLocaleDateString()}
                             </div>
                           )}
+                          {/* Subtasks Section */}
+                          <TaskSubtasks 
+                            taskId={task.id}
+                            subtasks={getSubtasks(task.id)}
+                            onAddSubtask={handleAddSubtask}
+                            onToggleSubtask={handleToggleSubtask}
+                            onDeleteSubtask={handleDeleteSubtask}
+                          />
                           {task.status !== "SUBMITTED" && (
                             <button 
                               className="btn-submit-assignment"
@@ -1146,6 +1452,14 @@ export default function App() {
                                 : new Date(task.dueDate.year, task.dueDate.month - 1, task.dueDate.day).toLocaleDateString()}
                             </div>
                           )}
+                          {/* Subtasks Section */}
+                          <TaskSubtasks 
+                            taskId={task.id}
+                            subtasks={getSubtasks(task.id)}
+                            onAddSubtask={handleAddSubtask}
+                            onToggleSubtask={handleToggleSubtask}
+                            onDeleteSubtask={handleDeleteSubtask}
+                          />
                           {task.status !== "SUBMITTED" && (
                             <button 
                               className="btn-submit-assignment"
@@ -1216,6 +1530,14 @@ export default function App() {
                                 : new Date(task.dueDate.year, task.dueDate.month - 1, task.dueDate.day).toLocaleDateString()}
                             </div>
                           )}
+                          {/* Subtasks Section */}
+                          <TaskSubtasks 
+                            taskId={task.id}
+                            subtasks={getSubtasks(task.id)}
+                            onAddSubtask={handleAddSubtask}
+                            onToggleSubtask={handleToggleSubtask}
+                            onDeleteSubtask={handleDeleteSubtask}
+                          />
                           <div className="kanban-submitted-confirmation">
                             ✓ Submitted
                           </div>
@@ -1233,6 +1555,162 @@ export default function App() {
       )}
         </>
       )}
+
+      {/* Add Custom Task Modal */}
+      {showAddTaskModal && (
+        <AddTaskModal
+          courses={useMockData ? mockCourses : (courses?.courses || [])}
+          onClose={() => setShowAddTaskModal(false)}
+          onAdd={handleAddCustomTask}
+        />
+      )}
+    </div>
+  );
+}
+
+// Add Custom Task Modal Component
+function AddTaskModal({ courses, onClose, onAdd }) {
+  const [title, setTitle] = useState("");
+  const [courseId, setCourseId] = useState("");
+  const [courseName, setCourseName] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [status, setStatus] = useState("PENDING");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!title.trim()) {
+      alert("Please enter a task title");
+      return;
+    }
+
+    const taskData = {
+      title: title.trim(),
+      courseId: courseId || 'custom',
+      courseName: courseName || 'Custom',
+      dueDate: dueDate || null,
+      dueText: dueDate ? new Date(dueDate).toLocaleDateString() : null,
+      status: status,
+    };
+
+    onAdd(taskData);
+    
+    // Reset form
+    setTitle("");
+    setCourseId("");
+    setCourseName("");
+    setDueDate("");
+    setStatus("PENDING");
+  };
+
+  const handleCourseChange = (e) => {
+    const selectedCourseId = e.target.value;
+    setCourseId(selectedCourseId);
+    if (selectedCourseId === 'custom') {
+      setCourseName("");
+    } else {
+      const course = courses.find(c => c.id === selectedCourseId);
+      setCourseName(course?.name || "");
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="modal-title">Add Custom Task</h2>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        <form className="modal-form" onSubmit={handleSubmit}>
+          <div className="modal-form-group">
+            <label htmlFor="task-title" className="modal-label">
+              Task Title *
+            </label>
+            <input
+              id="task-title"
+              type="text"
+              className="modal-input"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter task title..."
+              required
+              autoFocus
+            />
+          </div>
+
+          <div className="modal-form-group">
+            <label htmlFor="task-course" className="modal-label">
+              Course
+            </label>
+            <select
+              id="task-course"
+              className="modal-select"
+              value={courseId}
+              onChange={handleCourseChange}
+            >
+              <option value="custom">Custom</option>
+              {courses.map((course) => (
+                <option key={course.id} value={course.id}>
+                  {course.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {courseId === 'custom' && (
+            <div className="modal-form-group">
+              <label htmlFor="task-course-name" className="modal-label">
+                Custom Course Name
+              </label>
+              <input
+                id="task-course-name"
+                type="text"
+                className="modal-input"
+                value={courseName}
+                onChange={(e) => setCourseName(e.target.value)}
+                placeholder="Enter course name..."
+              />
+            </div>
+          )}
+
+          <div className="modal-form-group">
+            <label htmlFor="task-due-date" className="modal-label">
+              Due Date
+            </label>
+            <input
+              id="task-due-date"
+              type="date"
+              className="modal-input"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+            />
+          </div>
+
+          <div className="modal-form-group">
+            <label htmlFor="task-status" className="modal-label">
+              Status
+            </label>
+            <select
+              id="task-status"
+              className="modal-select"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
+              <option value="PENDING">Pending</option>
+              <option value="IN_PROGRESS">In Progress</option>
+              <option value="SUBMITTED">Submitted</option>
+            </select>
+          </div>
+
+          <div className="modal-actions">
+            <button type="button" className="btn btn-secondary" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-primary">
+              Add Task
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

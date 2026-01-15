@@ -1672,3 +1672,427 @@
     font-size: 16px;
   }
 }
+
+/* Add Custom Task Button */
+.btn-add-task {
+  margin-left: auto;
+  padding: 0.75rem 1.5rem;
+  font-size: 18px;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  letter-spacing: 0.03em;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.modal-content {
+  background: #ffffff;
+  border: 4px solid #000000;
+  border-radius: 0.75rem;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2rem;
+  border-bottom: 3px solid #000000;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #000000;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  letter-spacing: 0.03em;
+  line-height: 1.6;
+}
+
+.modal-close {
+  background: #ffffff;
+  border: 3px solid #000000;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #000000;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  line-height: 1;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.modal-close:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
+  transform: scale(1.05) rotate(90deg);
+}
+
+.modal-close:active {
+  transform: scale(0.95) rotate(90deg);
+}
+
+.modal-form {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.modal-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.modal-label {
+  font-size: 18px;
+  font-weight: 700;
+  color: #000000;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  letter-spacing: 0.03em;
+  line-height: 1.6;
+}
+
+.modal-input,
+.modal-select {
+  padding: 1rem;
+  border: 3px solid #000000;
+  border-radius: 0.5rem;
+  font-size: 18px;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  letter-spacing: 0.03em;
+  line-height: 1.6;
+  color: #000000;
+  background: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.modal-input:focus,
+.modal-select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid #e5e7eb;
+}
+
+/* Subtasks Styles */
+.task-subtasks {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 2px solid #e5e7eb;
+}
+
+.task-subtasks-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.task-subtasks-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #000000;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  letter-spacing: 0.03em;
+  line-height: 1.6;
+}
+
+.task-subtasks-count {
+  font-size: 15px;
+  font-weight: 700;
+  color: #374151;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  background: #e5e7eb;
+  padding: 0.375rem 0.875rem;
+  border-radius: 1rem;
+  border: 2px solid #d1d5db;
+  min-width: 3rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.btn-add-subtask {
+  margin-left: auto;
+  width: 36px;
+  height: 36px;
+  border: 3px solid #2563eb;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  line-height: 1;
+  padding: 0;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+  flex-shrink: 0;
+}
+
+.btn-add-subtask:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+  transform: scale(1.05);
+}
+
+.btn-add-subtask:active {
+  transform: scale(0.95);
+}
+
+/* When add subtask input is open (minus icon) */
+.btn-add-subtask-open {
+  background: #dc2626 !important;
+  border-color: #dc2626 !important;
+}
+
+.btn-add-subtask-open:hover {
+  background: #b91c1c !important;
+  border-color: #b91c1c !important;
+}
+
+.task-subtasks-add {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.task-subtasks-input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 2px solid #000000;
+  border-radius: 0.375rem;
+  font-size: 16px;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  letter-spacing: 0.03em;
+  line-height: 1.6;
+  color: #000000;
+  background: #ffffff;
+}
+
+.task-subtasks-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.btn-subtask-add {
+  padding: 0.75rem 1.25rem;
+  background: #2563eb;
+  color: #ffffff;
+  border: 3px solid #2563eb;
+  border-radius: 0.375rem;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  letter-spacing: 0.03em;
+  line-height: 1.6;
+}
+
+.btn-subtask-add:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.task-subtasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.task-subtask-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+}
+
+.task-subtask-item:hover {
+  border-color: #d1d5db;
+  background: #ffffff;
+}
+
+.task-subtask-item.completed {
+  opacity: 0.7;
+}
+
+.task-subtask-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  cursor: pointer;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif;
+}
+
+.task-subtask-checkbox input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #2563eb;
+}
+
+.task-subtask-text {
+  font-size: 16px;
+  color: #000000;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  letter-spacing: 0.03em;
+  line-height: 1.6;
+}
+
+.task-subtask-item.completed .task-subtask-text {
+  text-decoration: line-through;
+  color: #6b7280;
+}
+
+.btn-subtask-delete {
+  width: 32px;
+  height: 32px;
+  border: 2px solid #dc2626;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #dc2626;
+  font-size: 22px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  line-height: 1;
+  padding: 0;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(220, 38, 38, 0.2);
+}
+
+.btn-subtask-delete:hover {
+  background: #dc2626;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);
+  transform: scale(1.1);
+}
+
+.btn-subtask-delete:active {
+  transform: scale(0.95);
+}
+
+/* Responsive Modal */
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 1rem;
+  }
+
+  .modal-content {
+    max-width: 100%;
+  }
+
+  .modal-header {
+    padding: 1.5rem;
+  }
+
+  .modal-title {
+    font-size: 24px;
+  }
+
+  .modal-form {
+    padding: 1.5rem;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .modal-actions .btn {
+    width: 100%;
+  }
+
+  .btn-add-task {
+    font-size: 16px;
+    padding: 0.625rem 1.25rem;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .btn-add-subtask {
+    width: 32px;
+    height: 32px;
+    font-size: 20px;
+  }
+
+  .btn-subtask-delete {
+    width: 28px;
+    height: 28px;
+    font-size: 20px;
+  }
+
+  .modal-close {
+    width: 40px;
+    height: 40px;
+    font-size: 24px;
+  }
+
+  .task-subtasks-count {
+    font-size: 14px;
+    padding: 0.25rem 0.625rem;
+  }
+}
