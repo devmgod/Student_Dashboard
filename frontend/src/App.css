@@ -805,6 +805,65 @@
   align-items: center;
   gap: 0.75rem;
   flex-wrap: wrap;
+  position: relative;
+}
+
+.btn-delete-task {
+  margin-left: auto;
+  width: 32px;
+  height: 32px;
+  border: 2px solid #dc2626;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #dc2626;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+  line-height: 1;
+  padding: 0;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(220, 38, 38, 0.2);
+}
+
+.btn-delete-task:hover {
+  background: #dc2626;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);
+  transform: scale(1.1);
+}
+
+.btn-delete-task:active {
+  transform: scale(0.95);
+}
+
+.btn-delete-task:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+.btn-delete-task {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-delete-task .spinner-small {
+  border-color: rgba(220, 38, 38, 0.3);
+  border-top-color: #dc2626;
+  width: 18px;
+  height: 18px;
+  border-width: 2px;
+}
+
+/* Ensure spinner is visible when button is disabled */
+.btn-delete-task:disabled .spinner-small {
+  border-color: rgba(220, 38, 38, 0.4);
+  border-top-color: #dc2626;
+  opacity: 1;
 }
 
 .kanban-course-badge {
@@ -890,14 +949,32 @@
   text-transform: uppercase;
 }
 
-.btn-submit-assignment:hover {
+.btn-submit-assignment:hover:not(:disabled) {
   background: #16a34a;
   border-color: #16a34a;
 }
 
-.btn-submit-assignment:active {
+.btn-submit-assignment:active:not(:disabled) {
   background: #15803d;
   transform: scale(0.98);
+}
+
+.btn-submit-assignment:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn-submit-assignment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-submit-assignment .spinner-small {
+  border-color: rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  width: 18px;
+  height: 18px;
 }
 
 /* Submitted Card Styling */
@@ -1826,6 +1903,21 @@
   border-top: 2px solid #e5e7eb;
 }
 
+.task-subtasks-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  color: #6b7280;
+  font-size: 15px;
+  font-family: 'OpenDyslexic', 'Atkinson Hyperlegible', Arial, sans-serif !important;
+}
+
+.task-subtasks-loading .spinner-small {
+  border-color: rgba(0, 0, 0, 0.2);
+  border-top-color: #000000;
+}
+
 .task-subtasks-header {
   display: flex;
   align-items: center;
@@ -1941,9 +2033,20 @@
   line-height: 1.6;
 }
 
-.btn-subtask-add:hover {
+.btn-subtask-add:hover:not(:disabled) {
   background: #1d4ed8;
   border-color: #1d4ed8;
+}
+
+.btn-subtask-add:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-subtask-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .task-subtasks-list {
@@ -2022,15 +2125,20 @@
   box-shadow: 0 1px 3px rgba(220, 38, 38, 0.2);
 }
 
-.btn-subtask-delete:hover {
+.btn-subtask-delete:hover:not(:disabled) {
   background: #dc2626;
   color: #ffffff;
   box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);
   transform: scale(1.1);
 }
 
-.btn-subtask-delete:active {
+.btn-subtask-delete:active:not(:disabled) {
   transform: scale(0.95);
+}
+
+.btn-subtask-delete:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Responsive Modal */
@@ -2059,9 +2167,20 @@
     flex-direction: column;
   }
 
-  .modal-actions .btn {
-    width: 100%;
-  }
+.modal-actions .btn {
+  width: 100%;
+}
+
+.modal-actions .btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.modal-actions .btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
   .btn-add-task {
     font-size: 16px;
@@ -2094,5 +2213,11 @@
   .task-subtasks-count {
     font-size: 14px;
     padding: 0.25rem 0.625rem;
+  }
+
+  .btn-delete-task {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
   }
 }

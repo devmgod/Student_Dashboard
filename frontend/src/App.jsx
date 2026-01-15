@@ -4,12 +4,12 @@ import "./App.css";
 const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // Subtasks Component
-function TaskSubtasks({ taskId, subtasks, onAddSubtask, onToggleSubtask, onDeleteSubtask }) {
+function TaskSubtasks({ taskId, subtasks, onAddSubtask, onToggleSubtask, onDeleteSubtask, isLoading, isAdding }) {
   const [newSubtaskText, setNewSubtaskText] = useState("");
   const [showAddSubtask, setShowAddSubtask] = useState(false);
 
   const handleAdd = () => {
-    if (newSubtaskText.trim()) {
+    if (newSubtaskText.trim() && !isAdding) {
       onAddSubtask(taskId, newSubtaskText);
       setNewSubtaskText("");
       setShowAddSubtask(false);
@@ -55,13 +55,26 @@ function TaskSubtasks({ taskId, subtasks, onAddSubtask, onToggleSubtask, onDelet
           <button
             className="btn-subtask-add"
             onClick={handleAdd}
+            disabled={isAdding}
           >
-            Add
+            {isAdding ? (
+              <>
+                <span className="spinner-small"></span>
+                <span style={{ marginLeft: '0.5rem' }}>Adding...</span>
+              </>
+            ) : (
+              'Add'
+            )}
           </button>
         </div>
       )}
 
-      {subtasks.length > 0 && (
+      {isLoading ? (
+        <div className="task-subtasks-loading">
+          <span className="spinner-small"></span>
+          <span>Loading subtasks...</span>
+        </div>
+      ) : subtasks.length > 0 ? (
         <div className="task-subtasks-list">
           {subtasks.map((subtask) => (
             <div key={subtask.id} className={`task-subtask-item ${subtask.completed ? 'completed' : ''}`}>
@@ -70,6 +83,7 @@ function TaskSubtasks({ taskId, subtasks, onAddSubtask, onToggleSubtask, onDelet
                   type="checkbox"
                   checked={subtask.completed}
                   onChange={() => onToggleSubtask(taskId, subtask.id)}
+                  disabled={isLoading}
                 />
                 <span className="task-subtask-text">{subtask.text}</span>
               </label>
@@ -77,13 +91,14 @@ function TaskSubtasks({ taskId, subtasks, onAddSubtask, onToggleSubtask, onDelet
                 className="btn-subtask-delete"
                 onClick={() => onDeleteSubtask(taskId, subtask.id)}
                 title="Delete subtask"
+                disabled={isLoading}
               >
                 ×
               </button>
             </div>
           ))}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -161,6 +176,11 @@ export default function App() {
   const [customTasks, setCustomTasks] = useState([]); // Custom tasks added manually
   const [showAddTaskModal, setShowAddTaskModal] = useState(false); // Modal for adding custom tasks
   const [taskSubtasks, setTaskSubtasks] = useState({}); // { taskId: [{ id, text, completed }] }
+  const [loadingCustomTasks, setLoadingCustomTasks] = useState(false); // Loading state for custom tasks
+  const [deletingTaskId, setDeletingTaskId] = useState(null); // Track which task is being deleted
+  const [loadingSubtasks, setLoadingSubtasks] = useState({}); // { taskId: true/false }
+  const [addingSubtaskTaskId, setAddingSubtaskTaskId] = useState(null); // Track which task is adding a subtask
+  const [submittingTaskId, setSubmittingTaskId] = useState(null); // Track which task is being submitted
 
   function loadMockData() {
     setErr("");
@@ -227,6 +247,7 @@ export default function App() {
 
   // Load custom tasks from database
   async function loadCustomTasks() {
+    setLoadingCustomTasks(true);
     try {
       const res = await fetch(`${API}/api/custom-tasks`);
       if (res.ok) {
@@ -243,11 +264,14 @@ export default function App() {
       }
     } catch (error) {
       console.error("Error loading custom tasks:", error);
+    } finally {
+      setLoadingCustomTasks(false);
     }
   }
 
   // Load subtasks for a specific task
   async function loadSubtasks(taskId) {
+    setLoadingSubtasks(prev => ({ ...prev, [taskId]: true }));
     try {
       const res = await fetch(`${API}/api/tasks/${taskId}/subtasks`);
       if (res.ok) {
@@ -259,6 +283,8 @@ export default function App() {
       }
     } catch (error) {
       console.error("Error loading subtasks:", error);
+    } finally {
+      setLoadingSubtasks(prev => ({ ...prev, [taskId]: false }));
     }
   }
 
@@ -381,12 +407,14 @@ export default function App() {
 
   // Function to submit an assignment
   async function handleSubmitAssignment(taskId) {
-    // Check if this is a custom task
-    const customTask = customTasks.find(t => t.id === taskId);
+    setSubmittingTaskId(taskId);
     
-    if (customTask) {
-      // Update custom task in database
-      try {
+    try {
+      // Check if this is a custom task
+      const customTask = customTasks.find(t => t.id === taskId);
+      
+      if (customTask) {
+        // Update custom task in database
         const res = await fetch(`${API}/api/custom-tasks/${taskId}`, {
           method: 'PUT',
           headers: {
@@ -408,66 +436,68 @@ export default function App() {
             t.id === taskId ? { ...updatedTask, isCustom: true } : t
           ));
         }
-      } catch (error) {
-        console.error("Error updating custom task:", error);
+      } else if (useMockData) {
+        // Update mock assignments state
+        const updatedAssignments = mockAssignmentsState.map(assignment => 
+          assignment.id === taskId 
+            ? { ...assignment, status: "SUBMITTED", dueText: "Submitted" }
+            : assignment
+        );
+        setMockAssignmentsState(updatedAssignments);
+        
+        // Also update courseWork state to keep it in sync
+        setCourseWork(prev => {
+          const updated = { ...prev };
+          Object.keys(updated).forEach(courseId => {
+            if (updated[courseId]?.data) {
+              updated[courseId] = {
+                ...updated[courseId],
+                data: updated[courseId].data.map(assignment =>
+                  assignment.id === taskId
+                    ? { ...assignment, status: "SUBMITTED", dueText: "Submitted" }
+                    : assignment
+                )
+              };
+            }
+          });
+          return updated;
+        });
+      } else {
+        // Update courseWork state for real data
+        setCourseWork(prev => {
+          const updated = { ...prev };
+          Object.keys(updated).forEach(courseId => {
+            if (updated[courseId]?.data) {
+              updated[courseId] = {
+                ...updated[courseId],
+                data: updated[courseId].data.map(assignment =>
+                  assignment.id === taskId
+                    ? { ...assignment, status: "SUBMITTED", dueText: "Submitted" }
+                    : assignment
+                )
+              };
+            }
+          });
+          return updated;
+        });
       }
-    } else if (useMockData) {
-      // Update mock assignments state
-      const updatedAssignments = mockAssignmentsState.map(assignment => 
-        assignment.id === taskId 
-          ? { ...assignment, status: "SUBMITTED", dueText: "Submitted" }
-          : assignment
-      );
-      setMockAssignmentsState(updatedAssignments);
       
-      // Also update courseWork state to keep it in sync
-      setCourseWork(prev => {
-        const updated = { ...prev };
-        Object.keys(updated).forEach(courseId => {
-          if (updated[courseId]?.data) {
-            updated[courseId] = {
-              ...updated[courseId],
-              data: updated[courseId].data.map(assignment =>
-                assignment.id === taskId
-                  ? { ...assignment, status: "SUBMITTED", dueText: "Submitted" }
-                  : assignment
-              )
-            };
-          }
+      // Add to recently submitted set to show checkmark
+      setRecentlySubmitted(prev => new Set(prev).add(taskId));
+      
+      // Remove from recently submitted after animation (3 seconds)
+      setTimeout(() => {
+        setRecentlySubmitted(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(taskId);
+          return newSet;
         });
-        return updated;
-      });
-    } else {
-      // Update courseWork state for real data
-      setCourseWork(prev => {
-        const updated = { ...prev };
-        Object.keys(updated).forEach(courseId => {
-          if (updated[courseId]?.data) {
-            updated[courseId] = {
-              ...updated[courseId],
-              data: updated[courseId].data.map(assignment =>
-                assignment.id === taskId
-                  ? { ...assignment, status: "SUBMITTED", dueText: "Submitted" }
-                  : assignment
-              )
-            };
-          }
-        });
-        return updated;
-      });
+      }, 3000);
+    } catch (error) {
+      console.error("Error submitting assignment:", error);
+    } finally {
+      setSubmittingTaskId(null);
     }
-    
-    // Add to recently submitted set to show checkmark
-    setRecentlySubmitted(prev => new Set(prev).add(taskId));
-    
-    // Remove from recently submitted after animation (3 seconds)
-    setTimeout(() => {
-      setRecentlySubmitted(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(taskId);
-        return newSet;
-      });
-    }, 3000);
   }
 
   // Helper function to get all assignments from courseWork state
@@ -755,6 +785,7 @@ export default function App() {
 
   // Function to add a custom task
   async function handleAddCustomTask(taskData) {
+    setLoadingCustomTasks(true);
     try {
       const res = await fetch(`${API}/api/custom-tasks`, {
         method: 'POST',
@@ -775,6 +806,8 @@ export default function App() {
         const newTask = await res.json();
         setCustomTasks(prev => [...prev, { ...newTask, isCustom: true }]);
         setShowAddTaskModal(false);
+        // Load subtasks for the new task
+        await loadSubtasks(newTask.id);
       } else {
         const error = await res.json();
         alert(`Failed to create task: ${error.error || 'Unknown error'}`);
@@ -782,6 +815,8 @@ export default function App() {
     } catch (error) {
       console.error("Error creating custom task:", error);
       alert("Failed to create task. Please try again.");
+    } finally {
+      setLoadingCustomTasks(false);
     }
   }
 
@@ -789,6 +824,7 @@ export default function App() {
   async function handleAddSubtask(taskId, subtaskText) {
     if (!subtaskText.trim()) return;
     
+    setAddingSubtaskTaskId(taskId);
     try {
       const res = await fetch(`${API}/api/tasks/${taskId}/subtasks`, {
         method: 'POST',
@@ -812,6 +848,8 @@ export default function App() {
       }
     } catch (error) {
       console.error("Error creating subtask:", error);
+    } finally {
+      setAddingSubtaskTaskId(null);
     }
   }
 
@@ -857,6 +895,40 @@ export default function App() {
       }
     } catch (error) {
       console.error("Error deleting subtask:", error);
+    }
+  }
+
+  // Function to delete a custom task
+  async function handleDeleteCustomTask(taskId) {
+    if (!window.confirm("Are you sure you want to delete this task? This action cannot be undone.")) {
+      return;
+    }
+
+    setDeletingTaskId(taskId);
+    try {
+      const res = await fetch(`${API}/api/custom-tasks/${taskId}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        // Remove task from state
+        setCustomTasks(prev => prev.filter(task => task.id !== taskId));
+        
+        // Remove subtasks for this task
+        setTaskSubtasks(prev => {
+          const updated = { ...prev };
+          delete updated[taskId];
+          return updated;
+        });
+      } else {
+        const error = await res.json();
+        alert(`Failed to delete task: ${error.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error("Error deleting custom task:", error);
+      alert("Failed to delete task. Please try again.");
+    } finally {
+      setDeletingTaskId(null);
     }
   }
 
@@ -1282,7 +1354,11 @@ export default function App() {
       </div>
 
       {/* Kanban Board */}
-      {((useMockData && mockAssignments.length > 0) || (getAllAssignments().length > 0 && (!courses || !courses.courses || courses.courses.length > 0))) && (
+      {/* Show Kanban Board if:
+          - Using mock data, OR
+          - Connected to Google (me exists), OR
+          - Has assignments */}
+      {((useMockData) || (me) || (getAllAssignments().length > 0)) && (
         <div className="data-card kanban-card">
           <div className="card-header">
             <h3 className="card-title">
@@ -1353,6 +1429,20 @@ export default function App() {
                                'Later'}
                             </span>
                           )}
+                          {task.isCustom && (
+                            <button
+                              className="btn-delete-task"
+                              onClick={() => handleDeleteCustomTask(task.id)}
+                              title="Delete custom task"
+                              disabled={deletingTaskId === task.id}
+                            >
+                              {deletingTaskId === task.id ? (
+                                <span className="spinner-small"></span>
+                              ) : (
+                                '🗑️'
+                              )}
+                            </button>
+                          )}
                         </div>
                         <div className="kanban-card-body">
                           <h5 className="kanban-card-title">{task.title}</h5>
@@ -1375,13 +1465,23 @@ export default function App() {
                             onAddSubtask={handleAddSubtask}
                             onToggleSubtask={handleToggleSubtask}
                             onDeleteSubtask={handleDeleteSubtask}
+                            isLoading={loadingSubtasks[task.id] || false}
+                            isAdding={addingSubtaskTaskId === task.id}
                           />
                           {task.status !== "SUBMITTED" && (
                             <button 
                               className="btn-submit-assignment"
                               onClick={() => handleSubmitAssignment(task.id)}
+                              disabled={submittingTaskId === task.id}
                             >
-                              Submit Assignment
+                              {submittingTaskId === task.id ? (
+                                <>
+                                  <span className="spinner-small"></span>
+                                  <span style={{ marginLeft: '0.5rem' }}>Submitting...</span>
+                                </>
+                              ) : (
+                                'Submit Assignment'
+                              )}
                             </button>
                           )}
                           {task.status === "SUBMITTED" && (
@@ -1437,6 +1537,20 @@ export default function App() {
                                'Later'}
                             </span>
                           )}
+                          {task.isCustom && (
+                            <button
+                              className="btn-delete-task"
+                              onClick={() => handleDeleteCustomTask(task.id)}
+                              title="Delete custom task"
+                              disabled={deletingTaskId === task.id}
+                            >
+                              {deletingTaskId === task.id ? (
+                                <span className="spinner-small"></span>
+                              ) : (
+                                '🗑️'
+                              )}
+                            </button>
+                          )}
                         </div>
                         <div className="kanban-card-body">
                           <h5 className="kanban-card-title">{task.title}</h5>
@@ -1459,13 +1573,23 @@ export default function App() {
                             onAddSubtask={handleAddSubtask}
                             onToggleSubtask={handleToggleSubtask}
                             onDeleteSubtask={handleDeleteSubtask}
+                            isLoading={loadingSubtasks[task.id] || false}
+                            isAdding={addingSubtaskTaskId === task.id}
                           />
                           {task.status !== "SUBMITTED" && (
                             <button 
                               className="btn-submit-assignment"
                               onClick={() => handleSubmitAssignment(task.id)}
+                              disabled={submittingTaskId === task.id}
                             >
-                              Submit Assignment
+                              {submittingTaskId === task.id ? (
+                                <>
+                                  <span className="spinner-small"></span>
+                                  <span style={{ marginLeft: '0.5rem' }}>Submitting...</span>
+                                </>
+                              ) : (
+                                'Submit Assignment'
+                              )}
                             </button>
                           )}
                           {task.status === "SUBMITTED" && (
@@ -1514,6 +1638,20 @@ export default function App() {
                           >
                             {task.courseName}
                           </span>
+                          {task.isCustom && (
+                            <button
+                              className="btn-delete-task"
+                              onClick={() => handleDeleteCustomTask(task.id)}
+                              title="Delete custom task"
+                              disabled={deletingTaskId === task.id}
+                            >
+                              {deletingTaskId === task.id ? (
+                                <span className="spinner-small"></span>
+                              ) : (
+                                '🗑️'
+                              )}
+                            </button>
+                          )}
                           <div className="submitted-checkmark-icon">✓</div>
                         </div>
                         <div className="kanban-card-body">
@@ -1537,6 +1675,8 @@ export default function App() {
                             onAddSubtask={handleAddSubtask}
                             onToggleSubtask={handleToggleSubtask}
                             onDeleteSubtask={handleDeleteSubtask}
+                            isLoading={loadingSubtasks[task.id] || false}
+                            isAdding={addingSubtaskTaskId === task.id}
                           />
                           <div className="kanban-submitted-confirmation">
                             ✓ Submitted
@@ -1562,6 +1702,7 @@ export default function App() {
           courses={useMockData ? mockCourses : (courses?.courses || [])}
           onClose={() => setShowAddTaskModal(false)}
           onAdd={handleAddCustomTask}
+          isLoading={loadingCustomTasks}
         />
       )}
     </div>
@@ -1569,7 +1710,7 @@ export default function App() {
 }
 
 // Add Custom Task Modal Component
-function AddTaskModal({ courses, onClose, onAdd }) {
+function AddTaskModal({ courses, onClose, onAdd, isLoading }) {
   const [title, setTitle] = useState("");
   const [courseId, setCourseId] = useState("");
   const [courseName, setCourseName] = useState("");
@@ -1634,6 +1775,7 @@ function AddTaskModal({ courses, onClose, onAdd }) {
               placeholder="Enter task title..."
               required
               autoFocus
+              disabled={isLoading}
             />
           </div>
 
@@ -1646,6 +1788,7 @@ function AddTaskModal({ courses, onClose, onAdd }) {
               className="modal-select"
               value={courseId}
               onChange={handleCourseChange}
+              disabled={isLoading}
             >
               <option value="custom">Custom</option>
               {courses.map((course) => (
@@ -1668,6 +1811,7 @@ function AddTaskModal({ courses, onClose, onAdd }) {
                 value={courseName}
                 onChange={(e) => setCourseName(e.target.value)}
                 placeholder="Enter course name..."
+                disabled={isLoading}
               />
             </div>
           )}
@@ -1682,6 +1826,7 @@ function AddTaskModal({ courses, onClose, onAdd }) {
               className="modal-input"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
+              disabled={isLoading}
             />
           </div>
 
@@ -1694,6 +1839,7 @@ function AddTaskModal({ courses, onClose, onAdd }) {
               className="modal-select"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
+              disabled={isLoading}
             >
               <option value="PENDING">Pending</option>
               <option value="IN_PROGRESS">In Progress</option>
@@ -1702,11 +1848,18 @@ function AddTaskModal({ courses, onClose, onAdd }) {
           </div>
 
           <div className="modal-actions">
-            <button type="button" className="btn btn-secondary" onClick={onClose}>
+            <button type="button" className="btn btn-secondary" onClick={onClose} disabled={isLoading}>
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary">
-              Add Task
+            <button type="submit" className="btn btn-primary" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <span className="spinner-small"></span>
+                  <span style={{ marginLeft: '0.5rem' }}>Creating...</span>
+                </>
+              ) : (
+                'Add Task'
+              )}
             </button>
           </div>
         </form>
