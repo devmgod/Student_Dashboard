@@ -50,11 +50,26 @@ function initDatabase() {
       )
     `);
 
+    // Course Colors table (stores user preferences for course colors by course name)
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS course_colors (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_email TEXT NOT NULL,
+        course_name TEXT NOT NULL,
+        color TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        UNIQUE(user_email, course_name)
+      )
+    `);
+
     // Create indexes for better performance
     db.exec(`
       CREATE INDEX IF NOT EXISTS idx_custom_tasks_user_email ON custom_tasks(user_email);
       CREATE INDEX IF NOT EXISTS idx_custom_tasks_status ON custom_tasks(status);
       CREATE INDEX IF NOT EXISTS idx_subtasks_task_id ON subtasks(task_id);
+      CREATE INDEX IF NOT EXISTS idx_course_colors_user_email ON course_colors(user_email);
+      CREATE INDEX IF NOT EXISTS idx_course_colors_course_name ON course_colors(course_name);
     `);
 
     console.log('Database initialized successfully');
@@ -125,6 +140,27 @@ const stmts = {
   
   deleteSubtasksByTaskId: db.prepare(`
     DELETE FROM subtasks WHERE task_id = ?
+  `),
+  
+  // Course Colors
+  getCourseColor: db.prepare(`
+    SELECT color FROM course_colors WHERE user_email = ? AND course_name = ?
+  `),
+  
+  getAllCourseColors: db.prepare(`
+    SELECT course_name, color FROM course_colors WHERE user_email = ?
+  `),
+  
+  upsertCourseColor: db.prepare(`
+    INSERT INTO course_colors (user_email, course_name, color, updated_at)
+    VALUES (?, ?, ?, datetime('now'))
+    ON CONFLICT(user_email, course_name) DO UPDATE SET
+      color = excluded.color,
+      updated_at = datetime('now')
+  `),
+  
+  deleteCourseColor: db.prepare(`
+    DELETE FROM course_colors WHERE user_email = ? AND course_name = ?
   `),
 };
 
@@ -238,6 +274,29 @@ export const dbOps = {
   
   deleteSubtask: (subtaskId, taskId) => {
     return stmts.deleteSubtask.run(subtaskId, taskId);
+  },
+  
+  // Course Colors
+  getCourseColor: (userEmail, courseName) => {
+    const result = stmts.getCourseColor.get(userEmail, courseName);
+    return result ? result.color : null;
+  },
+  
+  getAllCourseColors: (userEmail) => {
+    const results = stmts.getAllCourseColors.all(userEmail);
+    const colorMap = {};
+    results.forEach(row => {
+      colorMap[row.course_name] = row.color;
+    });
+    return colorMap;
+  },
+  
+  setCourseColor: (userEmail, courseName, color) => {
+    return stmts.upsertCourseColor.run(userEmail, courseName, color);
+  },
+  
+  deleteCourseColor: (userEmail, courseName) => {
+    return stmts.deleteCourseColor.run(userEmail, courseName);
   },
 };
 

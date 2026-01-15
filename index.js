@@ -367,6 +367,65 @@ app.delete("/api/tasks/:taskId/subtasks/:subtaskId", async (req, res) => {
   }
 });
 
+// ====== COURSE COLORS API ======
+
+// Get all course colors for a user
+app.get("/api/course-colors", async (req, res) => {
+  try {
+    const userEmail = await getUserEmail();
+    const colors = dbOps.getAllCourseColors(userEmail);
+    res.json(colors);
+  } catch (error) {
+    console.error("Error fetching course colors:", error);
+    res.status(500).json({ error: "Failed to fetch course colors" });
+  }
+});
+
+// Get color for a specific course
+app.get("/api/course-colors/:courseName", async (req, res) => {
+  try {
+    const userEmail = await getUserEmail();
+    const { courseName } = req.params;
+    const color = dbOps.getCourseColor(userEmail, decodeURIComponent(courseName));
+    res.json({ courseName: decodeURIComponent(courseName), color });
+  } catch (error) {
+    console.error("Error fetching course color:", error);
+    res.status(500).json({ error: "Failed to fetch course color" });
+  }
+});
+
+// Set color for a specific course
+app.put("/api/course-colors/:courseName", async (req, res) => {
+  try {
+    const userEmail = await getUserEmail();
+    const { courseName } = req.params;
+    const { color } = req.body;
+    
+    if (!color || !/^#[0-9A-Fa-f]{6}$/.test(color)) {
+      return res.status(400).json({ error: "Valid hex color is required (e.g., #2563eb)" });
+    }
+    
+    dbOps.setCourseColor(userEmail, decodeURIComponent(courseName), color);
+    res.json({ courseName: decodeURIComponent(courseName), color });
+  } catch (error) {
+    console.error("Error setting course color:", error);
+    res.status(500).json({ error: "Failed to set course color" });
+  }
+});
+
+// Delete color for a specific course (reset to default)
+app.delete("/api/course-colors/:courseName", async (req, res) => {
+  try {
+    const userEmail = await getUserEmail();
+    const { courseName } = req.params;
+    dbOps.deleteCourseColor(userEmail, decodeURIComponent(courseName));
+    res.json({ message: "Course color reset to default" });
+  } catch (error) {
+    console.error("Error deleting course color:", error);
+    res.status(500).json({ error: "Failed to delete course color" });
+  }
+});
+
 app.listen(4000, () => {
   console.log("Server running on http://localhost:4000");
   console.log("Start OAuth: http://localhost:4000/auth/google");

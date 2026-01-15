@@ -181,11 +181,16 @@ export default function App() {
   const [loadingSubtasks, setLoadingSubtasks] = useState({}); // { taskId: true/false }
   const [addingSubtaskTaskId, setAddingSubtaskTaskId] = useState(null); // Track which task is adding a subtask
   const [submittingTaskId, setSubmittingTaskId] = useState(null); // Track which task is being submitted
+  const [courseColors, setCourseColors] = useState({}); // { courseName: color }
+  const [editingColorCourseName, setEditingColorCourseName] = useState(null); // Track which course color is being edited
 
   function loadMockData() {
     setErr("");
     setLoading(true);
     try {
+      // Clear real data when switching to mock data
+      setSubmissions({});
+      
       // Set mock user
       setMe({ name: "Test User", email: "test@example.com" });
       
@@ -214,6 +219,9 @@ export default function App() {
       setCourseWork(courseWorkData);
       
       setUseMockData(true);
+      
+      // Load course colors from database
+      loadCourseColors();
     } catch (e) {
       setErr(String(e.message || e));
     } finally {
@@ -221,13 +229,37 @@ export default function App() {
     }
   }
 
+  // Function to clear current data and reset state
+  function clearData() {
+    setMe(null);
+    setCourses(null);
+    setCourseWork({});
+    setSubmissions({});
+    setExpandedCourses(new Set());
+    setExpandedCourseWork(new Set());
+    setErr("");
+    setUseMockData(false);
+    setRecentlySubmitted(new Set());
+    setMockAssignmentsState([...mockAssignments]);
+    setCustomTasks([]);
+    setCourseColors({});
+    localStorage.removeItem('googleClassroomSession');
+  }
+
   async function load() {
     setErr("");
     setLoading(true);
     try {
+      // Clear mock data flag when loading real data
+      setUseMockData(false);
+      
       const meRes = await fetch(`${API}/api/me`);
       const meJson = await meRes.json();
-      if (!meRes.ok) throw new Error(JSON.stringify(meJson));
+      if (!meRes.ok) {
+        // If authentication fails, clear session
+        localStorage.removeItem('googleClassroomSession');
+        throw new Error(JSON.stringify(meJson));
+      }
 
       const cRes = await fetch(`${API}/api/courses`);
       const cJson = await cRes.json();
@@ -236,9 +268,23 @@ export default function App() {
       setMe(meJson);
       setCourses(cJson);
       
+      // Mark session as authenticated after successful load
+      localStorage.setItem('googleClassroomSession', 'authenticated');
+      
+      // Clear course work and submissions when switching to real data
+      setCourseWork({});
+      setSubmissions({});
+      
       // Load custom tasks from database
       await loadCustomTasks();
+      
+      // Load course colors from database
+      await loadCourseColors();
     } catch (e) {
+      // If error is authentication-related, clear session
+      if (e.message && e.message.includes('Not connected')) {
+        localStorage.removeItem('googleClassroomSession');
+      }
       setErr(String(e.message || e));
     } finally {
       setLoading(false);
@@ -267,6 +313,64 @@ export default function App() {
     } finally {
       setLoadingCustomTasks(false);
     }
+  }
+
+  // Load course colors from database
+  async function loadCourseColors() {
+    try {
+      const res = await fetch(`${API}/api/course-colors`);
+      if (res.ok) {
+        const colors = await res.json();
+        setCourseColors(colors);
+      }
+    } catch (error) {
+      console.error("Error loading course colors:", error);
+    }
+  }
+
+  // Update course color
+  async function updateCourseColor(courseName, color) {
+    try {
+      const res = await fetch(`${API}/api/course-colors/${encodeURIComponent(courseName)}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ color }),
+      });
+      
+      if (res.ok) {
+        setCourseColors(prev => ({
+          ...prev,
+          [courseName]: color
+        }));
+        return true;
+      } else {
+        const error = await res.json();
+        console.error("Failed to update course color:", error);
+        return false;
+      }
+    } catch (error) {
+      console.error("Error updating course color:", error);
+      return false;
+    }
+  }
+
+  // Get course name from courseId
+  function getCourseName(courseId) {
+    // Try mock courses first
+    const mockCourse = mockCourses.find(c => c.id === courseId);
+    if (mockCourse) return mockCourse.name;
+    
+    // Try courses from state
+    const course = courses?.courses?.find(c => c.id === courseId);
+    if (course) return course.name;
+    
+    // Try custom tasks
+    const customTask = customTasks.find(t => t.courseId === courseId);
+    if (customTask) return customTask.courseName;
+    
+    return null;
   }
 
   // Load subtasks for a specific task
@@ -567,11 +671,17 @@ export default function App() {
 
   // Helper function to get course color
   function getCourseColor(courseId) {
-    // Try mock courses first
+    // First, try user's saved color preference (by course name)
+    const courseName = getCourseName(courseId);
+    if (courseName && courseColors[courseName]) {
+      return courseColors[courseName];
+    }
+    
+    // Try mock courses (for mock data)
     const mockCourse = mockCourses.find(c => c.id === courseId);
     if (mockCourse?.color) return mockCourse.color;
     
-    // Try courses from state
+    // Try courses from state (Google Classroom may provide colors)
     const course = courses?.courses?.find(c => c.id === courseId);
     if (course?.color) return course.color;
     
@@ -590,8 +700,36 @@ export default function App() {
   // Helper functions for filtering assignments by status (Kanban columns)
   const getAllTasksByStatus = (status) => {
     const allTasks = getAllAssignments();
-    return allTasks.filter((t) => t.status === status);
+    const filtered = allTasks.filter((t) => t.status === status);
+    
+    // Sort by due date (closest deadline at the top)
+    return filtered.sort((a, b) => {
+      const dateA = parseDueDate(a.dueDate);
+      const dateB = parseDueDate(b.dueDate);
+      
+      // Tasks without due dates go to the bottom
+      if (!dateA && !dateB) return 0;
+      if (!dateA) return 1;  // a goes after b
+      if (!dateB) return -1; // a goes before b
+      
+      // Sort by date ascending (closest deadline first)
+      return dateA - dateB;
+    });
   };
+
+  // Helper function to format date as dd/mm/yy
+  function formatDate(date) {
+    if (!date) return '';
+    
+    const d = parseDueDate(date);
+    if (!d) return '';
+    
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = String(d.getFullYear()).slice(-2);
+    
+    return `${day}/${month}/${year}`;
+  }
 
   // Helper function to parse due date (handles both string and object formats)
   function parseDueDate(dueDate) {
@@ -749,9 +887,28 @@ export default function App() {
     };
   }
 
+  // Check authentication status and auto-load on mount
   useEffect(() => {
-    const connected = new URLSearchParams(window.location.search).get("connected");
-    if (connected) load();
+    const checkAuthAndLoad = async () => {
+      // Check if we have a stored session
+      const hasStoredSession = localStorage.getItem('googleClassroomSession') === 'authenticated';
+      
+      // Check URL parameter for OAuth callback
+      const connected = new URLSearchParams(window.location.search).get("connected");
+      
+      if (connected || hasStoredSession) {
+        // Mark session as authenticated
+        localStorage.setItem('googleClassroomSession', 'authenticated');
+        // Remove the URL parameter for cleaner URLs
+        if (connected) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        // Auto-load data
+        await load();
+      }
+    };
+    
+    checkAuthAndLoad();
   }, []);
 
   // Load subtasks when custom tasks are loaded
@@ -951,34 +1108,60 @@ export default function App() {
     return null;
   }
 
+  // Helper function to get connection status
+  function getConnectionStatus() {
+    const hasStoredSession = localStorage.getItem('googleClassroomSession') === 'authenticated';
+    if (me || useMockData || hasStoredSession) {
+      return {
+        connected: true,
+        type: useMockData ? 'mock' : 'google',
+        text: useMockData ? 'Using Mock Data' : 'Connected to Google Classroom'
+      };
+    }
+    return {
+      connected: false,
+      type: 'disconnected',
+      text: 'Not Connected'
+    };
+  }
+
   return (
     <div className="app-container">
       {/* Top Bar with Profile Card */}
-      {(me || useMockData) && (
-        <div className="top-bar">
-          <div className="top-bar-content">
-            <div className="top-bar-left">
-              <h1 className="top-bar-title">Google Classroom Connection</h1>
-            </div>
-            <div className="top-bar-right">
-              <div className="profile-card">
-                {getProfilePictureUrl() ? (
-                  <img 
-                    src={getProfilePictureUrl()} 
-                    alt={getUserName()}
-                    className="profile-picture"
-                  />
-                ) : (
-                  <div className="profile-picture profile-picture-initials">
-                    {getUserInitials(getUserName())}
+      <div className="top-bar">
+        <div className="top-bar-content">
+          <div className="top-bar-left">
+            <h1 className="top-bar-title">Google Classroom Connection</h1>
+          </div>
+          <div className="top-bar-right">
+            <div className="connection-status">
+              {(() => {
+                const status = getConnectionStatus();
+                return (
+                  <div className={`connection-status-badge ${status.connected ? 'connected' : 'disconnected'}`}>
+                    <span className="connection-status-dot"></span>
+                    <span className="connection-status-text">{status.text}</span>
                   </div>
-                )}
-                <span className="profile-name">{getUserName()}</span>
-              </div>
+                );
+              })()}
+            </div>
+            <div className="profile-card">
+              {getProfilePictureUrl() ? (
+                <img 
+                  src={getProfilePictureUrl()} 
+                  alt={getUserName()}
+                  className="profile-picture"
+                />
+              ) : (
+                <div className="profile-picture profile-picture-initials">
+                  {getUserInitials(getUserName())}
+                </div>
+              )}
+              <span className="profile-name">{getUserName()}</span>
             </div>
           </div>
         </div>
-      )}
+      </div>
 
       <div className="app-header">
         <h1 className="app-title">Google Classroom Connection</h1>
@@ -986,37 +1169,96 @@ export default function App() {
       </div>
 
       <div className="action-buttons">
-        <a
-          href={`${API}/auth/google`}
-          className="btn btn-primary"
-          disabled={loading}
-        >
-          Connect with Google
-        </a>
-
-        <button
-          onClick={loadMockData}
-          className="btn btn-secondary"
-          disabled={loading}
-        >
-          Load Mock Data
-        </button>
-
-        <button
-          onClick={load}
-          className="btn btn-secondary"
-          disabled={loading}
-        >
-          {loading ? "Loading..." : "Refresh Data"}
-        </button>
+        {!useMockData ? (
+          <>
+            {!me ? (
+              <a
+                href={`${API}/auth/google`}
+                className="btn btn-primary"
+                disabled={loading}
+              >
+                Connect with Google
+              </a>
+            ) : (
+              <button
+                onClick={load}
+                className="btn btn-primary"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <span className="spinner-small"></span>
+                    <span style={{ marginLeft: '0.5rem' }}>Loading...</span>
+                  </>
+                ) : (
+                  "Refresh Data"
+                )}
+              </button>
+            )}
+            <button
+              onClick={() => {
+                clearData();
+                loadMockData();
+              }}
+              className="btn btn-secondary"
+              disabled={loading}
+            >
+              Switch to Mock Data
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={loadMockData}
+              className="btn btn-secondary"
+              disabled={loading}
+              title="Reload mock data"
+            >
+              {loading ? (
+                <>
+                  <span className="spinner-small"></span>
+                  <span style={{ marginLeft: '0.5rem' }}>Loading...</span>
+                </>
+              ) : (
+                "Reload Mock Data"
+              )}
+            </button>
+            <a
+              href={`${API}/auth/google`}
+              className="btn btn-primary"
+              disabled={loading}
+              onClick={(e) => {
+                e.preventDefault();
+                clearData();
+                window.location.href = `${API}/auth/google`;
+              }}
+            >
+              Switch to Google Classroom
+            </a>
+          </>
+        )}
 
         {(me || useMockData) && (
-          <button
-            onClick={() => setViewMode(viewMode === "student" ? "tutor" : "student")}
-            className={`btn ${viewMode === "tutor" ? "btn-primary" : "btn-secondary"}`}
-          >
-            {viewMode === "student" ? "Tutor/Parent View" : "Student View"}
-          </button>
+          <>
+            <button
+              onClick={() => setViewMode(viewMode === "student" ? "tutor" : "student")}
+              className={`btn ${viewMode === "tutor" ? "btn-primary" : "btn-secondary"}`}
+            >
+              {viewMode === "student" ? "Tutor/Parent View" : "Student View"}
+            </button>
+            <button
+              onClick={() => {
+                if (window.confirm("Are you sure you want to disconnect and clear all data?")) {
+                  clearData();
+                }
+              }}
+              className="btn btn-secondary"
+              disabled={loading}
+              title="Disconnect and clear all data"
+            >
+              Disconnect
+            </button>
+          </>
         )}
       </div>
 
@@ -1125,9 +1367,7 @@ export default function App() {
                         )}
                         {task.dueDate && !task.dueText && (
                           <div className="tutor-assignment-due">
-                            Due: {typeof task.dueDate === 'string' 
-                              ? new Date(task.dueDate).toLocaleDateString()
-                              : new Date(task.dueDate.year, task.dueDate.month - 1, task.dueDate.day).toLocaleDateString()}
+                            Due: {formatDate(task.dueDate)}
                           </div>
                         )}
                         <div className="tutor-assignment-status">
@@ -1159,7 +1399,7 @@ export default function App() {
                     return (
                       <div key={task.id} className="tutor-deadline-item">
                         <div className="tutor-deadline-date">
-                          {dueDate ? dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'No date'}
+                          {dueDate ? formatDate(task.dueDate) : 'No date'}
                           {daysUntil !== null && (
                             <span className="tutor-deadline-days">
                               {daysUntil === 0 ? 'Today' : daysUntil === 1 ? 'Tomorrow' : `${daysUntil} days`}
@@ -1205,9 +1445,7 @@ export default function App() {
                           )}
                           {task.dueDate && !task.dueText && (
                             <span className="tutor-submitted-due">
-                              Due: {typeof task.dueDate === 'string' 
-                                ? new Date(task.dueDate).toLocaleDateString()
-                                : new Date(task.dueDate.year, task.dueDate.month - 1, task.dueDate.day).toLocaleDateString()}
+                              Due: {formatDate(task.dueDate)}
                             </span>
                           )}
                         </div>
@@ -1254,11 +1492,24 @@ export default function App() {
                       </div>
                       {course.section && <div className="course-section">{course.section}</div>}
                     </div>
-                    {courseWork[course.id]?.data && (
-                      <span className="badge badge-small">
-                        {courseWork[course.id].data.length}
-                      </span>
-                    )}
+                    <div className="course-header-actions" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        className="btn-course-color"
+                        onClick={() => setEditingColorCourseName(course.name || `Course ${course.id}`)}
+                        title="Change course color"
+                        style={{
+                          backgroundColor: getCourseColor(course.id),
+                          borderColor: getCourseColor(course.id)
+                        }}
+                      >
+                        🎨
+                      </button>
+                      {courseWork[course.id]?.data && (
+                        <span className="badge badge-small">
+                          {courseWork[course.id].data.length}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   {expandedCourses.has(course.id) && (
                     <div className="course-work-container">
@@ -1288,9 +1539,7 @@ export default function App() {
                                   )}
                                   {work.dueDate && !work.dueText && (
                                     <div className="course-work-meta">
-                                      Due: {typeof work.dueDate === 'string' 
-                                        ? new Date(work.dueDate).toLocaleDateString()
-                                        : new Date(work.dueDate.year, work.dueDate.month - 1, work.dueDate.day).toLocaleDateString()}
+                                      Due: {formatDate(work.dueDate)}
                                     </div>
                                   )}
                                   {work.status && (
@@ -1453,9 +1702,7 @@ export default function App() {
                           )}
                           {task.dueDate && !task.dueText && (
                             <div className="kanban-card-due">
-                              <strong>Due:</strong> {typeof task.dueDate === 'string' 
-                                ? new Date(task.dueDate).toLocaleDateString()
-                                : new Date(task.dueDate.year, task.dueDate.month - 1, task.dueDate.day).toLocaleDateString()}
+                              <strong>Due:</strong> {formatDate(task.dueDate)}
                             </div>
                           )}
                           {/* Subtasks Section */}
@@ -1561,9 +1808,7 @@ export default function App() {
                           )}
                           {task.dueDate && !task.dueText && (
                             <div className="kanban-card-due">
-                              <strong>Due:</strong> {typeof task.dueDate === 'string' 
-                                ? new Date(task.dueDate).toLocaleDateString()
-                                : new Date(task.dueDate.year, task.dueDate.month - 1, task.dueDate.day).toLocaleDateString()}
+                              <strong>Due:</strong> {formatDate(task.dueDate)}
                             </div>
                           )}
                           {/* Subtasks Section */}
@@ -1663,9 +1908,7 @@ export default function App() {
                           )}
                           {task.dueDate && !task.dueText && (
                             <div className="kanban-card-due">
-                              <strong>Due:</strong> {typeof task.dueDate === 'string' 
-                                ? new Date(task.dueDate).toLocaleDateString()
-                                : new Date(task.dueDate.year, task.dueDate.month - 1, task.dueDate.day).toLocaleDateString()}
+                              <strong>Due:</strong> {formatDate(task.dueDate)}
                             </div>
                           )}
                           {/* Subtasks Section */}
@@ -1705,6 +1948,195 @@ export default function App() {
           isLoading={loadingCustomTasks}
         />
       )}
+
+      {/* Course Color Picker Modal */}
+      {editingColorCourseName && (
+        <CourseColorPickerModal
+          courseName={editingColorCourseName}
+          currentColor={courseColors[editingColorCourseName] || getCourseColor(
+            mockCourses.find(c => c.name === editingColorCourseName)?.id ||
+            courses?.courses?.find(c => c.name === editingColorCourseName)?.id ||
+            ''
+          )}
+          onClose={() => setEditingColorCourseName(null)}
+          onSave={async (color) => {
+            const success = await updateCourseColor(editingColorCourseName, color);
+            if (success) {
+              setEditingColorCourseName(null);
+            }
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// Helper function to format date as dd/mm/yy (used in modal)
+function formatDateForModal(dateString) {
+  if (!dateString) return '';
+  const d = new Date(dateString);
+  if (isNaN(d.getTime())) return '';
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = String(d.getFullYear()).slice(-2);
+  return `${day}/${month}/${year}`;
+}
+
+// Course Color Picker Modal Component
+function CourseColorPickerModal({ courseName, currentColor, onClose, onSave }) {
+  const [selectedColor, setSelectedColor] = useState(currentColor);
+  const [customColor, setCustomColor] = useState(currentColor);
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+
+  // Predefined color palette
+  const colorPalette = [
+    '#2563eb', // Blue
+    '#9333ea', // Purple
+    '#15803d', // Green
+    '#dc2626', // Red
+    '#ea580c', // Orange
+    '#ca8a04', // Yellow
+    '#0891b2', // Cyan
+    '#be185d', // Pink
+    '#7c3aed', // Violet
+    '#059669', // Emerald
+    '#0284c7', // Sky
+    '#c2410c', // Orange Red
+    '#1f2937', // Dark Gray
+    '#4b5563', // Gray
+    '#9ca3af', // Light Gray
+  ];
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await onSave(selectedColor);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleReset = async () => {
+    setIsResetting(true);
+    try {
+      const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
+      await fetch(`${API}/api/course-colors/${encodeURIComponent(courseName)}`, {
+        method: 'DELETE',
+      });
+      onClose();
+      // Reload page to refresh colors
+      window.location.reload();
+    } catch (error) {
+      console.error("Error resetting color:", error);
+      setIsResetting(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="modal-title">Change Color for {courseName}</h2>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        <div className="modal-form">
+          <div className="modal-form-group">
+            <label className="modal-label">Select a color:</label>
+            <div className="color-palette">
+              {colorPalette.map((color) => (
+                <button
+                  key={color}
+                  type="button"
+                  className={`color-swatch ${selectedColor === color ? 'selected' : ''}`}
+                  style={{ backgroundColor: color }}
+                  onClick={() => {
+                    setSelectedColor(color);
+                    setCustomColor(color);
+                    setShowCustomInput(false);
+                  }}
+                  disabled={isSaving || isResetting}
+                  title={color}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="modal-form-group">
+            <label className="modal-label">Or enter custom color:</label>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <input
+                type="color"
+                value={customColor}
+                onChange={(e) => {
+                  setCustomColor(e.target.value);
+                  setSelectedColor(e.target.value);
+                  setShowCustomInput(true);
+                }}
+                disabled={isSaving || isResetting}
+                style={{ width: '60px', height: '40px', cursor: (isSaving || isResetting) ? 'not-allowed' : 'pointer', opacity: (isSaving || isResetting) ? 0.6 : 1 }}
+              />
+              <input
+                type="text"
+                value={customColor}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (/^#[0-9A-Fa-f]{0,6}$/.test(value)) {
+                    setCustomColor(value);
+                    setSelectedColor(value);
+                    setShowCustomInput(true);
+                  }
+                }}
+                placeholder="#000000"
+                disabled={isSaving || isResetting}
+                style={{ flex: 1, padding: '0.5rem', opacity: (isSaving || isResetting) ? 0.6 : 1 }}
+              />
+            </div>
+          </div>
+
+          <div className="modal-actions">
+            <button 
+              type="button" 
+              className="btn btn-secondary" 
+              onClick={handleReset}
+              disabled={isSaving || isResetting}
+            >
+              {isResetting ? (
+                <>
+                  <span className="spinner-small"></span>
+                  <span style={{ marginLeft: '0.5rem' }}>Resetting...</span>
+                </>
+              ) : (
+                'Reset to Default'
+              )}
+            </button>
+            <button 
+              type="button" 
+              className="btn btn-secondary" 
+              onClick={onClose}
+              disabled={isSaving || isResetting}
+            >
+              Cancel
+            </button>
+            <button 
+              type="button" 
+              className="btn btn-primary" 
+              onClick={handleSave}
+              disabled={isSaving || isResetting}
+            >
+              {isSaving ? (
+                <>
+                  <span className="spinner-small"></span>
+                  <span style={{ marginLeft: '0.5rem' }}>Saving...</span>
+                </>
+              ) : (
+                'Save Color'
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -1729,7 +2161,7 @@ function AddTaskModal({ courses, onClose, onAdd, isLoading }) {
       courseId: courseId || 'custom',
       courseName: courseName || 'Custom',
       dueDate: dueDate || null,
-      dueText: dueDate ? new Date(dueDate).toLocaleDateString() : null,
+      dueText: dueDate ? formatDateForModal(dueDate) : null,
       status: status,
     };
 
