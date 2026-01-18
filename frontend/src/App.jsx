@@ -515,6 +515,106 @@ export default function App() {
     setExpandedCourseWork(newExpanded);
   }
 
+  // Function to cycle task status: PENDING → IN_PROGRESS → SUBMITTED
+  async function handleTaskStatusClick(taskId, e) {
+    // Prevent triggering if clicking on interactive elements
+    if (e.target.tagName === 'BUTTON' || 
+        e.target.tagName === 'INPUT' || 
+        e.target.tagName === 'LABEL' ||
+        e.target.closest('button') ||
+        e.target.closest('input') ||
+        e.target.closest('.task-subtasks')) {
+      return;
+    }
+
+    // Find the task
+    const allTasks = getAllAssignments();
+    const task = allTasks.find(t => t.id === taskId);
+    if (!task || task.status === 'SUBMITTED') {
+      return; // Don't cycle submitted tasks
+    }
+
+    // Determine next status: PENDING → IN_PROGRESS, IN_PROGRESS → SUBMITTED
+    const nextStatus = task.status === 'PENDING' ? 'IN_PROGRESS' : 'SUBMITTED';
+
+    // Check if this is a custom task
+    const customTask = customTasks.find(t => t.id === taskId);
+    
+    if (customTask) {
+      // Update custom task in database
+      try {
+        const res = await fetch(`${API}/api/custom-tasks/${taskId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            title: customTask.title,
+            courseId: customTask.courseId,
+            courseName: customTask.courseName,
+            dueDate: customTask.dueDate,
+            dueText: customTask.dueText,
+            status: nextStatus,
+          }),
+        });
+
+        if (res.ok) {
+          const updatedTask = await res.json();
+          setCustomTasks(prev => prev.map(t => 
+            t.id === taskId ? { ...updatedTask, isCustom: true } : t
+          ));
+        }
+      } catch (error) {
+        console.error("Error updating task status:", error);
+      }
+    } else if (useMockData) {
+      // Update mock assignments state
+      const updatedAssignments = mockAssignmentsState.map(assignment => 
+        assignment.id === taskId 
+          ? { ...assignment, status: nextStatus }
+          : assignment
+      );
+      setMockAssignmentsState(updatedAssignments);
+      
+      // Also update courseWork state to keep it in sync
+      setCourseWork(prev => {
+        const updated = { ...prev };
+        Object.keys(updated).forEach(courseId => {
+          if (updated[courseId]?.data) {
+            updated[courseId] = {
+              ...updated[courseId],
+              data: updated[courseId].data.map(assignment =>
+                assignment.id === taskId
+                  ? { ...assignment, status: nextStatus }
+                  : assignment
+              )
+            };
+          }
+        });
+        return updated;
+      });
+    } else {
+      // For real Google Classroom data, we can't modify the status via API
+      // So we'll just update local state (won't persist)
+      setCourseWork(prev => {
+        const updated = { ...prev };
+        Object.keys(updated).forEach(courseId => {
+          if (updated[courseId]?.data) {
+            updated[courseId] = {
+              ...updated[courseId],
+              data: updated[courseId].data.map(assignment =>
+                assignment.id === taskId
+                  ? { ...assignment, status: nextStatus }
+                  : assignment
+              )
+            };
+          }
+        });
+        return updated;
+      });
+    }
+  }
+
   // Function to submit an assignment
   async function handleSubmitAssignment(taskId) {
     setSubmittingTaskId(taskId);
@@ -1686,7 +1786,13 @@ export default function App() {
                 <div className="kanban-column-content">
                   {getAllTasksByStatus("PENDING").length > 0 ? (
                     getAllTasksByStatus("PENDING").map((task) => (
-                      <div key={task.id} className={`kanban-card-item ${recentlySubmitted.has(task.id) ? 'just-submitted' : ''}`}>
+                      <div 
+                        key={task.id} 
+                        className={`kanban-card-item ${recentlySubmitted.has(task.id) ? 'just-submitted' : ''}`}
+                        onClick={(e) => handleTaskStatusClick(task.id, e)}
+                        style={{ cursor: 'pointer' }}
+                        title={translate("kanban.clickToMove") || "Click to move to 'Doing'"}
+                      >
                         {recentlySubmitted.has(task.id) && (
                           <div className="submission-checkmark-overlay">
                             <div className="checkmark-circle">
@@ -1719,7 +1825,10 @@ export default function App() {
                           {task.isCustom && (
                             <button
                               className="btn-delete-task"
-                              onClick={() => handleDeleteCustomTask(task.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteCustomTask(task.id);
+                              }}
                               title="Delete custom task"
                               disabled={deletingTaskId === task.id}
                             >
@@ -1754,27 +1863,6 @@ export default function App() {
                             isAdding={addingSubtaskTaskId === task.id}
                             translate={translate}
                           />
-                          {task.status !== "SUBMITTED" && (
-                            <button 
-                              className="btn-submit-assignment"
-                              onClick={() => handleSubmitAssignment(task.id)}
-                              disabled={submittingTaskId === task.id}
-                            >
-                              {submittingTaskId === task.id ? (
-                                <>
-                                  <span className="spinner-small"></span>
-                                  <span style={{ marginLeft: '0.5rem' }}>{translate("kanban.submitting")}</span>
-                                </>
-                              ) : (
-                                translate("buttons.submitAssignment")
-                              )}
-                            </button>
-                          )}
-                          {task.status === "SUBMITTED" && (
-                            <div className="kanban-submitted-confirmation">
-                              {translate("kanban.submittedConfirmation")}
-                            </div>
-                          )}
                         </div>
                       </div>
                     ))
@@ -1793,7 +1881,13 @@ export default function App() {
                 <div className="kanban-column-content">
                   {getAllTasksByStatus("IN_PROGRESS").length > 0 ? (
                     getAllTasksByStatus("IN_PROGRESS").map((task) => (
-                      <div key={task.id} className={`kanban-card-item ${recentlySubmitted.has(task.id) ? 'just-submitted' : ''}`}>
+                      <div 
+                        key={task.id} 
+                        className={`kanban-card-item ${recentlySubmitted.has(task.id) ? 'just-submitted' : ''}`}
+                        onClick={(e) => handleTaskStatusClick(task.id, e)}
+                        style={{ cursor: 'pointer' }}
+                        title={translate("kanban.clickToMove") || "Click to move to 'Done'"}
+                      >
                         {recentlySubmitted.has(task.id) && (
                           <div className="submission-checkmark-overlay">
                             <div className="checkmark-circle">
@@ -1826,7 +1920,10 @@ export default function App() {
                           {task.isCustom && (
                             <button
                               className="btn-delete-task"
-                              onClick={() => handleDeleteCustomTask(task.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteCustomTask(task.id);
+                              }}
                               title="Delete custom task"
                               disabled={deletingTaskId === task.id}
                             >
@@ -1861,27 +1958,6 @@ export default function App() {
                             isAdding={addingSubtaskTaskId === task.id}
                             translate={translate}
                           />
-                          {task.status !== "SUBMITTED" && (
-                            <button 
-                              className="btn-submit-assignment"
-                              onClick={() => handleSubmitAssignment(task.id)}
-                              disabled={submittingTaskId === task.id}
-                            >
-                              {submittingTaskId === task.id ? (
-                                <>
-                                  <span className="spinner-small"></span>
-                                  <span style={{ marginLeft: '0.5rem' }}>{translate("kanban.submitting")}</span>
-                                </>
-                              ) : (
-                                translate("buttons.submitAssignment")
-                              )}
-                            </button>
-                          )}
-                          {task.status === "SUBMITTED" && (
-                            <div className="kanban-submitted-confirmation">
-                              {translate("kanban.submittedConfirmation")}
-                            </div>
-                          )}
                         </div>
                       </div>
                     ))
@@ -1900,7 +1976,10 @@ export default function App() {
                 <div className="kanban-column-content">
                   {getAllTasksByStatus("SUBMITTED").length > 0 ? (
                     getAllTasksByStatus("SUBMITTED").map((task) => (
-                      <div key={task.id} className={`kanban-card-item kanban-card-submitted ${recentlySubmitted.has(task.id) ? 'just-submitted' : ''}`}>
+                      <div 
+                        key={task.id} 
+                        className={`kanban-card-item kanban-card-submitted ${recentlySubmitted.has(task.id) ? 'just-submitted' : ''}`}
+                      >
                         {recentlySubmitted.has(task.id) && (
                           <div className="submission-checkmark-overlay">
                             <div className="checkmark-circle">
@@ -1926,7 +2005,10 @@ export default function App() {
                           {task.isCustom && (
                             <button
                               className="btn-delete-task"
-                              onClick={() => handleDeleteCustomTask(task.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteCustomTask(task.id);
+                              }}
                               title="Delete custom task"
                               disabled={deletingTaskId === task.id}
                             >
