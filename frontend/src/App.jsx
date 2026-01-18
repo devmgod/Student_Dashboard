@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import "./App.css";
+import { t, setLanguage, getInitialLanguage, languageNames } from "./i18n";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // Subtasks Component
-function TaskSubtasks({ taskId, subtasks, onAddSubtask, onToggleSubtask, onDeleteSubtask, isLoading, isAdding }) {
+function TaskSubtasks({ taskId, subtasks, onAddSubtask, onToggleSubtask, onDeleteSubtask, isLoading, isAdding, translate }) {
   const [newSubtaskText, setNewSubtaskText] = useState("");
   const [showAddSubtask, setShowAddSubtask] = useState(false);
 
@@ -22,7 +23,7 @@ function TaskSubtasks({ taskId, subtasks, onAddSubtask, onToggleSubtask, onDelet
   return (
     <div className="task-subtasks">
       <div className="task-subtasks-header">
-        <span className="task-subtasks-title">Subtasks</span>
+        <span className="task-subtasks-title">{translate("subtasks.title")}</span>
         {totalCount > 0 && (
           <span className="task-subtasks-count">
             {completedCount} / {totalCount}
@@ -31,7 +32,7 @@ function TaskSubtasks({ taskId, subtasks, onAddSubtask, onToggleSubtask, onDelet
         <button
           className={`btn-add-subtask ${showAddSubtask ? 'btn-add-subtask-open' : ''}`}
           onClick={() => setShowAddSubtask(!showAddSubtask)}
-          title={showAddSubtask ? "Close" : "Add subtask"}
+          title={showAddSubtask ? translate("subtasks.close") : translate("subtasks.addSubtask")}
         >
           {showAddSubtask ? "−" : "+"}
         </button>
@@ -42,7 +43,7 @@ function TaskSubtasks({ taskId, subtasks, onAddSubtask, onToggleSubtask, onDelet
           <input
             type="text"
             className="task-subtasks-input"
-            placeholder="Enter subtask..."
+            placeholder={translate("subtasks.enterSubtask")}
             value={newSubtaskText}
             onChange={(e) => setNewSubtaskText(e.target.value)}
             onKeyPress={(e) => {
@@ -60,10 +61,10 @@ function TaskSubtasks({ taskId, subtasks, onAddSubtask, onToggleSubtask, onDelet
             {isAdding ? (
               <>
                 <span className="spinner-small"></span>
-                <span style={{ marginLeft: '0.5rem' }}>Adding...</span>
+                <span style={{ marginLeft: '0.5rem' }}>{translate("subtasks.adding")}</span>
               </>
             ) : (
-              'Add'
+              translate("common.add")
             )}
           </button>
         </div>
@@ -72,7 +73,7 @@ function TaskSubtasks({ taskId, subtasks, onAddSubtask, onToggleSubtask, onDelet
       {isLoading ? (
         <div className="task-subtasks-loading">
           <span className="spinner-small"></span>
-          <span>Loading subtasks...</span>
+          <span>{translate("subtasks.loading")}</span>
         </div>
       ) : subtasks.length > 0 ? (
         <div className="task-subtasks-list">
@@ -90,7 +91,7 @@ function TaskSubtasks({ taskId, subtasks, onAddSubtask, onToggleSubtask, onDelet
               <button
                 className="btn-subtask-delete"
                 onClick={() => onDeleteSubtask(taskId, subtask.id)}
-                title="Delete subtask"
+                title={translate("buttons.deleteSubtask")}
                 disabled={isLoading}
               >
                 ×
@@ -183,6 +184,11 @@ export default function App() {
   const [submittingTaskId, setSubmittingTaskId] = useState(null); // Track which task is being submitted
   const [courseColors, setCourseColors] = useState({}); // { courseName: color }
   const [editingColorCourseName, setEditingColorCourseName] = useState(null); // Track which course color is being edited
+  const [currentLanguage, setCurrentLanguage] = useState(getInitialLanguage()); // Current language state
+
+  // Helper function for translations that uses current language state
+  // This ensures all translations update when language changes
+  const translate = useCallback((key, params = {}) => t(key, params, currentLanguage), [currentLanguage]);
 
   function loadMockData() {
     setErr("");
@@ -529,7 +535,7 @@ export default function App() {
             courseId: customTask.courseId,
             courseName: customTask.courseName,
             dueDate: customTask.dueDate,
-            dueText: "Submitted",
+            dueText: translate("kanban.submitted"),
             status: "SUBMITTED",
           }),
         });
@@ -544,7 +550,7 @@ export default function App() {
         // Update mock assignments state
         const updatedAssignments = mockAssignmentsState.map(assignment => 
           assignment.id === taskId 
-            ? { ...assignment, status: "SUBMITTED", dueText: "Submitted" }
+            ? { ...assignment, status: "SUBMITTED", dueText: translate("kanban.submitted") }
             : assignment
         );
         setMockAssignmentsState(updatedAssignments);
@@ -558,7 +564,7 @@ export default function App() {
                 ...updated[courseId],
                 data: updated[courseId].data.map(assignment =>
                   assignment.id === taskId
-                    ? { ...assignment, status: "SUBMITTED", dueText: "Submitted" }
+                    ? { ...assignment, status: "SUBMITTED", dueText: translate("kanban.submitted") }
                     : assignment
                 )
               };
@@ -576,7 +582,7 @@ export default function App() {
                 ...updated[courseId],
                 data: updated[courseId].data.map(assignment =>
                   assignment.id === taskId
-                    ? { ...assignment, status: "SUBMITTED", dueText: "Submitted" }
+                    ? { ...assignment, status: "SUBMITTED", dueText: translate("kanban.submitted") }
                     : assignment
                 )
               };
@@ -887,6 +893,14 @@ export default function App() {
     };
   }
 
+  // Initialize language from localStorage on mount
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('appLanguage');
+    if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'ca')) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
   // Check authentication status and auto-load on mount
   useEffect(() => {
     const checkAuthAndLoad = async () => {
@@ -967,11 +981,11 @@ export default function App() {
         await loadSubtasks(newTask.id);
       } else {
         const error = await res.json();
-        alert(`Failed to create task: ${error.error || 'Unknown error'}`);
+        alert(`${translate("errors.failedToCreateTask")} ${error.error || translate("errors.unknownError")}`);
       }
     } catch (error) {
       console.error("Error creating custom task:", error);
-      alert("Failed to create task. Please try again.");
+      alert(`${translate("errors.failedToCreateTask")} ${translate("errors.tryAgain")}`);
     } finally {
       setLoadingCustomTasks(false);
     }
@@ -1057,7 +1071,7 @@ export default function App() {
 
   // Function to delete a custom task
   async function handleDeleteCustomTask(taskId) {
-    if (!window.confirm("Are you sure you want to delete this task? This action cannot be undone.")) {
+    if (!window.confirm(translate("modals.deleteTask.confirm"))) {
       return;
     }
 
@@ -1079,11 +1093,11 @@ export default function App() {
         });
       } else {
         const error = await res.json();
-        alert(`Failed to delete task: ${error.error || 'Unknown error'}`);
+        alert(`${translate("errors.failedToDeleteTask")} ${error.error || translate("errors.unknownError")}`);
       }
     } catch (error) {
       console.error("Error deleting custom task:", error);
-      alert("Failed to delete task. Please try again.");
+      alert(`${translate("errors.failedToDeleteTask")} ${translate("errors.tryAgain")}`);
     } finally {
       setDeletingTaskId(null);
     }
@@ -1115,14 +1129,22 @@ export default function App() {
       return {
         connected: true,
         type: useMockData ? 'mock' : 'google',
-        text: useMockData ? 'Using Mock Data' : 'Connected to Google Classroom'
+        text: useMockData ? translate("connection.usingMockData") : translate("connection.connected")
       };
     }
     return {
       connected: false,
       type: 'disconnected',
-      text: 'Not Connected'
+      text: translate("connection.notConnected")
     };
+  }
+
+  // Function to handle language change
+  function handleLanguageChange(newLang) {
+    if (setLanguage(newLang)) {
+      setCurrentLanguage(newLang);
+      // Component will re-render automatically due to state change
+    }
   }
 
   return (
@@ -1131,9 +1153,25 @@ export default function App() {
       <div className="top-bar">
         <div className="top-bar-content">
           <div className="top-bar-left">
-            <h1 className="top-bar-title">Google Classroom Connection</h1>
+            <h1 className="top-bar-title">{translate("app.title")}</h1>
           </div>
           <div className="top-bar-right">
+            <div className="language-switcher">
+              <button
+                className={`btn-language ${currentLanguage === 'ca' ? 'active' : ''}`}
+                onClick={() => handleLanguageChange('ca')}
+                title="Català"
+              >
+                CA
+              </button>
+              <button
+                className={`btn-language ${currentLanguage === 'en' ? 'active' : ''}`}
+                onClick={() => handleLanguageChange('en')}
+                title="English"
+              >
+                EN
+              </button>
+            </div>
             <div className="connection-status">
               {(() => {
                 const status = getConnectionStatus();
@@ -1164,8 +1202,8 @@ export default function App() {
       </div>
 
       <div className="app-header">
-        <h1 className="app-title">Google Classroom Connection</h1>
-        <p className="app-subtitle">Connect and manage your Google Classroom data</p>
+        <h1 className="app-title">{translate("app.title")}</h1>
+        <p className="app-subtitle">{translate("app.subtitle")}</p>
       </div>
 
       <div className="action-buttons">
@@ -1177,7 +1215,7 @@ export default function App() {
                 className="btn btn-primary"
                 disabled={loading}
               >
-                Connect with Google
+                {translate("buttons.connectWithGoogle")}
               </a>
             ) : (
               <button
@@ -1188,10 +1226,10 @@ export default function App() {
                 {loading ? (
                   <>
                     <span className="spinner-small"></span>
-                    <span style={{ marginLeft: '0.5rem' }}>Loading...</span>
+                    <span style={{ marginLeft: '0.5rem' }}>{translate("common.loading")}</span>
                   </>
                 ) : (
-                  "Refresh Data"
+                  t("buttons.refreshData")
                 )}
               </button>
             )}
@@ -1203,7 +1241,7 @@ export default function App() {
               className="btn btn-secondary"
               disabled={loading}
             >
-              Switch to Mock Data
+              {translate("buttons.switchToMockData")}
             </button>
           </>
         ) : (
@@ -1212,15 +1250,15 @@ export default function App() {
               onClick={loadMockData}
               className="btn btn-secondary"
               disabled={loading}
-              title="Reload mock data"
+              title={translate("buttons.reloadMockData")}
             >
               {loading ? (
                 <>
                   <span className="spinner-small"></span>
-                  <span style={{ marginLeft: '0.5rem' }}>Loading...</span>
+                  <span style={{ marginLeft: '0.5rem' }}>{translate("common.loading")}</span>
                 </>
               ) : (
-                "Reload Mock Data"
+                t("buttons.reloadMockData")
               )}
             </button>
             <a
@@ -1233,7 +1271,7 @@ export default function App() {
                 window.location.href = `${API}/auth/google`;
               }}
             >
-              Switch to Google Classroom
+              {translate("buttons.switchToGoogleClassroom")}
             </a>
           </>
         )}
@@ -1244,19 +1282,19 @@ export default function App() {
               onClick={() => setViewMode(viewMode === "student" ? "tutor" : "student")}
               className={`btn ${viewMode === "tutor" ? "btn-primary" : "btn-secondary"}`}
             >
-              {viewMode === "student" ? "Tutor/Parent View" : "Student View"}
+              {viewMode === "student" ? translate("buttons.tutorParentView") : translate("buttons.studentView")}
             </button>
             <button
               onClick={() => {
-                if (window.confirm("Are you sure you want to disconnect and clear all data?")) {
+                if (window.confirm(translate("modals.deleteTask.disconnectConfirm"))) {
                   clearData();
                 }
               }}
               className="btn btn-secondary"
               disabled={loading}
-              title="Disconnect and clear all data"
+              title={translate("buttons.disconnect")}
             >
-              Disconnect
+              {translate("common.disconnect")}
             </button>
           </>
         )}
@@ -1265,7 +1303,7 @@ export default function App() {
       {err && (
         <div className="error-message">
           <div>
-            <strong>Error:</strong> {err}
+            <strong>{translate("common.error")}:</strong> {err}
           </div>
         </div>
       )}
@@ -1274,8 +1312,8 @@ export default function App() {
         /* Tutor/Parent View */
         <div className="tutor-view">
           <div className="tutor-view-header">
-            <h2 className="tutor-view-title">Student Progress Dashboard</h2>
-            <p className="tutor-view-subtitle">Quick overview of assignments and progress</p>
+            <h2 className="tutor-view-title">{translate("tutorView.title")}</h2>
+            <p className="tutor-view-subtitle">{translate("tutorView.subtitle")}</p>
           </div>
 
           {/* Summary Dashboard */}
@@ -1286,7 +1324,7 @@ export default function App() {
                 <div className="tutor-summary-card tutor-summary-progress">
                   <div className="tutor-summary-icon">📊</div>
                   <div className="tutor-summary-content">
-                    <div className="tutor-summary-label">Overall Progress</div>
+                    <div className="tutor-summary-label">{translate("tutorView.overallProgress")}</div>
                     <div className="tutor-summary-value-large">{summary.progressPercent}%</div>
                     <div className="tutor-progress-bar">
                       <div 
@@ -1294,34 +1332,34 @@ export default function App() {
                         style={{ width: `${summary.progressPercent}%` }}
                       ></div>
                     </div>
-                    <div className="tutor-summary-sublabel">{summary.completed} of {summary.total} completed</div>
+                    <div className="tutor-summary-sublabel">{summary.completed} {translate("tutorView.completed")} {summary.total}</div>
                   </div>
                 </div>
 
                 <div className="tutor-summary-card tutor-summary-pending">
                   <div className="tutor-summary-icon">📝</div>
                   <div className="tutor-summary-content">
-                    <div className="tutor-summary-label">Still Working On</div>
+                    <div className="tutor-summary-label">{translate("tutorView.stillWorkingOn")}</div>
                     <div className="tutor-summary-value">{summary.pending}</div>
-                    <div className="tutor-summary-sublabel">assignments</div>
+                    <div className="tutor-summary-sublabel">{translate("tutorView.assignments")}</div>
                   </div>
                 </div>
 
                 <div className="tutor-summary-card tutor-summary-due-today">
                   <div className="tutor-summary-icon">⏰</div>
                   <div className="tutor-summary-content">
-                    <div className="tutor-summary-label">Due Today</div>
+                    <div className="tutor-summary-label">{translate("tutorView.dueToday")}</div>
                     <div className="tutor-summary-value">{summary.dueToday}</div>
-                    <div className="tutor-summary-sublabel">assignments</div>
+                    <div className="tutor-summary-sublabel">{translate("tutorView.assignments")}</div>
                   </div>
                 </div>
 
                 <div className="tutor-summary-card tutor-summary-due-week">
                   <div className="tutor-summary-icon">📅</div>
                   <div className="tutor-summary-content">
-                    <div className="tutor-summary-label">Due This Week</div>
+                    <div className="tutor-summary-label">{translate("tutorView.dueThisWeek")}</div>
                     <div className="tutor-summary-value">{summary.dueThisWeek}</div>
-                    <div className="tutor-summary-sublabel">assignments</div>
+                    <div className="tutor-summary-sublabel">{translate("tutorView.assignments")}</div>
                   </div>
                 </div>
               </div>
@@ -1331,7 +1369,7 @@ export default function App() {
           {/* Assignments in Progress */}
           <div className="tutor-section">
             <div className="tutor-section-header">
-              <h3 className="tutor-section-title">Assignments in Progress</h3>
+              <h3 className="tutor-section-title">{translate("tutorView.assignmentsInProgress")}</h3>
               <span className="tutor-section-badge">{getPendingAssignments().length}</span>
             </div>
             <div className="tutor-section-content">
@@ -1352,9 +1390,9 @@ export default function App() {
                         </span>
                         {getDueDateCategory(task.dueDate) && (
                           <span className={`tutor-due-badge tutor-due-${getDueDateCategory(task.dueDate)}`}>
-                            {getDueDateCategory(task.dueDate) === 'today' ? 'Due Today' : 
-                             getDueDateCategory(task.dueDate) === 'thisWeek' ? 'This Week' : 
-                             'Upcoming'}
+                            {getDueDateCategory(task.dueDate) === 'today' ? translate("dueDate.badge.dueToday") : 
+                             getDueDateCategory(task.dueDate) === 'thisWeek' ? translate("dueDate.badge.thisWeek") : 
+                             translate("dueDate.badge.upcoming")}
                           </span>
                         )}
                       </div>
@@ -1362,23 +1400,23 @@ export default function App() {
                         <h4 className="tutor-assignment-title">{task.title}</h4>
                         {task.dueText && (
                           <div className="tutor-assignment-due">
-                            Due: {task.dueText}
+                            {translate("courseWork.due")}: {task.dueText}
                           </div>
                         )}
                         {task.dueDate && !task.dueText && (
                           <div className="tutor-assignment-due">
-                            Due: {formatDate(task.dueDate)}
+                            {translate("courseWork.due")}: {formatDate(task.dueDate)}
                           </div>
                         )}
                         <div className="tutor-assignment-status">
-                          {task.status === 'PENDING' ? 'Not started yet' : 'Currently working on this'}
+                          {task.status === 'PENDING' ? translate("tutorView.notStartedYet") : translate("tutorView.currentlyWorking")}
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="tutor-empty-state">All clear! No assignments in progress right now.</div>
+                <div className="tutor-empty-state">{translate("tutorView.allClear")}</div>
               )}
             </div>
           </div>
@@ -1386,7 +1424,7 @@ export default function App() {
           {/* Upcoming Deadlines */}
           <div className="tutor-section">
             <div className="tutor-section-header">
-              <h3 className="tutor-section-title">Upcoming Deadlines</h3>
+              <h3 className="tutor-section-title">{translate("tutorView.upcomingDeadlines")}</h3>
               <span className="tutor-section-badge">{getUpcomingDeadlines().length}</span>
             </div>
             <div className="tutor-section-content">
@@ -1399,10 +1437,10 @@ export default function App() {
                     return (
                       <div key={task.id} className="tutor-deadline-item">
                         <div className="tutor-deadline-date">
-                          {dueDate ? formatDate(task.dueDate) : 'No date'}
+                          {dueDate ? formatDate(task.dueDate) : translate("tutorView.noDate")}
                           {daysUntil !== null && (
                             <span className="tutor-deadline-days">
-                              {daysUntil === 0 ? 'Today' : daysUntil === 1 ? 'Tomorrow' : `${daysUntil} days`}
+                              {daysUntil === 0 ? translate("common.today") : daysUntil === 1 ? translate("common.tomorrow") : `${daysUntil} ${translate("tutorView.days")}`}
                             </span>
                           )}
                         </div>
@@ -1417,7 +1455,7 @@ export default function App() {
                   })}
                 </div>
               ) : (
-                <div className="tutor-empty-state">Great news! No upcoming deadlines in the next two weeks.</div>
+                <div className="tutor-empty-state">{translate("tutorView.greatNews")}</div>
               )}
             </div>
           </div>
@@ -1425,7 +1463,7 @@ export default function App() {
           {/* Recently Submitted Work */}
           <div className="tutor-section">
             <div className="tutor-section-header">
-              <h3 className="tutor-section-title">Recently Submitted Work</h3>
+              <h3 className="tutor-section-title">{translate("tutorView.recentlySubmittedWork")}</h3>
               <span className="tutor-section-badge">{getRecentlySubmittedWork().length}</span>
             </div>
             <div className="tutor-section-content">
@@ -1441,11 +1479,11 @@ export default function App() {
                             {task.courseName}
                           </span>
                           {task.dueText && (
-                            <span className="tutor-submitted-due">Due: {task.dueText}</span>
+                            <span className="tutor-submitted-due">{translate("courseWork.due")}: {task.dueText}</span>
                           )}
                           {task.dueDate && !task.dueText && (
                             <span className="tutor-submitted-due">
-                              Due: {formatDate(task.dueDate)}
+                              {translate("courseWork.due")}: {formatDate(task.dueDate)}
                             </span>
                           )}
                         </div>
@@ -1454,7 +1492,7 @@ export default function App() {
                   ))}
                 </div>
               ) : (
-                <div className="tutor-empty-state">No assignments submitted recently.</div>
+                <div className="tutor-empty-state">{translate("tutorView.noRecentSubmissions")}</div>
               )}
             </div>
           </div>
@@ -1465,7 +1503,7 @@ export default function App() {
       <div className="data-card">
         <div className="card-header">
           <h3 className="card-title">
-            Courses
+            {translate("courses.title")}
             {courses?.courses && Array.isArray(courses.courses) && (
               <span className="badge">{courses.courses.length}</span>
             )}
@@ -1475,7 +1513,7 @@ export default function App() {
           {loading ? (
             <div className="card-loading">
               <div className="spinner"></div>
-              <p className="loading-text">Loading courses...</p>
+              <p className="loading-text">{translate("courses.loading")}</p>
             </div>
           ) : courses?.courses && Array.isArray(courses.courses) ? (
             <div className="courses-list">
@@ -1490,13 +1528,13 @@ export default function App() {
                         {expandedCourses.has(course.id) ? '▼ ' : '▶ '}
                         {course.name || `Course ${course.id}`}
                       </div>
-                      {course.section && <div className="course-section">{course.section}</div>}
+                      {course.section && <div className="course-section">{translate("courses.section")}: {course.section}</div>}
                     </div>
                     <div className="course-header-actions" onClick={(e) => e.stopPropagation()}>
                       <button
                         className="btn-course-color"
                         onClick={() => setEditingColorCourseName(course.name || `Course ${course.id}`)}
-                        title="Change course color"
+                        title={translate("buttons.changeCourseColor")}
                         style={{
                           backgroundColor: getCourseColor(course.id),
                           borderColor: getCourseColor(course.id)
@@ -1515,10 +1553,10 @@ export default function App() {
                     <div className="course-work-container">
                       {courseWork[course.id]?.loading ? (
                         <div className="nested-loading">
-                          <span>Loading course work...</span>
+                          <span>{translate("courses.loadingCourseWork")}</span>
                         </div>
                       ) : courseWork[course.id]?.error ? (
-                        <div className="nested-error">Error: {courseWork[course.id].error}</div>
+                        <div className="nested-error">{translate("common.error")}: {courseWork[course.id].error}</div>
                       ) : courseWork[course.id]?.data && courseWork[course.id].data.length > 0 ? (
                         <div className="course-work-list">
                           {courseWork[course.id].data.map((work) => (
@@ -1539,7 +1577,7 @@ export default function App() {
                                   )}
                                   {work.dueDate && !work.dueText && (
                                     <div className="course-work-meta">
-                                      Due: {formatDate(work.dueDate)}
+                                      {translate("courseWork.due")}: {formatDate(work.dueDate)}
                                     </div>
                                   )}
                                   {work.status && (
@@ -1558,30 +1596,30 @@ export default function App() {
                                 <div className="submissions-container">
                                   {submissions[`${course.id}-${work.id}`]?.loading ? (
                                     <div className="nested-loading">
-                                      <span>Loading submissions...</span>
+                                      <span>{translate("courses.loadingSubmissions")}</span>
                                     </div>
                                   ) : submissions[`${course.id}-${work.id}`]?.error ? (
                                     <div className="nested-error">
-                                      Error: {submissions[`${course.id}-${work.id}`].error}
+                                      {translate("common.error")}: {submissions[`${course.id}-${work.id}`].error}
                                     </div>
                                   ) : submissions[`${course.id}-${work.id}`]?.data && submissions[`${course.id}-${work.id}`].data.length > 0 ? (
                                     <div className="submissions-info">
                                       {submissions[`${course.id}-${work.id}`].data.map((submission, idx) => {
-                                        const status = submission.state === 'SUBMITTED' || submission.state === 'TURNED_IN' ? 'Submitted' : 
-                                                       submission.state === 'RETURNED' ? 'Returned' :
-                                                       submission.state === 'NEW' ? 'Not Submitted' :
-                                                       submission.state || submission.status || 'Unknown';
+                                        const status = submission.state === 'SUBMITTED' || submission.state === 'TURNED_IN' ? translate("status.SUBMITTED") : 
+                                                       submission.state === 'RETURNED' ? translate("status.RETURNED") :
+                                                       submission.state === 'NEW' ? translate("status.NEW") :
+                                                       submission.state || submission.status || translate("common.unknown");
                                         return (
                                           <div key={submission.id || idx} className="submission-item">
                                             <div className="submission-status">
-                                              <strong>Status:</strong> {status}
+                                              <strong>{translate("courseWork.status")}:</strong> {status}
                                             </div>
                                           </div>
                                         );
                                       })}
                                     </div>
                                   ) : (
-                                    <div className="nested-empty">No submissions found</div>
+                                    <div className="nested-empty">{translate("courses.noSubmissions")}</div>
                                   )}
                                 </div>
                               )}
@@ -1589,7 +1627,7 @@ export default function App() {
                           ))}
                         </div>
                       ) : (
-                        <div className="nested-empty">No course work found</div>
+                        <div className="nested-empty">{translate("courses.noCourseWork")}</div>
                       )}
                     </div>
                   )}
@@ -1597,7 +1635,7 @@ export default function App() {
               ))}
             </div>
           ) : (
-            <p className="empty-state">No data yet. Refresh after connecting to load your courses.</p>
+            <p className="empty-state">{translate("courses.noData")}</p>
           )}
         </div>
       </div>
@@ -1611,28 +1649,28 @@ export default function App() {
         <div className="data-card kanban-card">
           <div className="card-header">
             <h3 className="card-title">
-              Assignment Dashboard
+              {translate("kanban.title")}
             </h3>
             <button
               onClick={() => setShowAddTaskModal(true)}
               className="btn btn-primary btn-add-task"
             >
-              + Add Custom Task
+              {translate("buttons.addCustomTask")}
             </button>
           </div>
           
           {/* Due Date Awareness Summary */}
           <div className="due-date-summary">
             <div className="due-date-summary-item">
-              <span className="due-date-badge due-date-today">Today</span>
+              <span className="due-date-badge due-date-today">{translate("dueDate.summary.today")}</span>
               <span className="due-date-count">{getAssignmentsByDueCategory('today').length}</span>
             </div>
             <div className="due-date-summary-item">
-              <span className="due-date-badge due-date-week">This Week</span>
+              <span className="due-date-badge due-date-week">{translate("dueDate.summary.thisWeek")}</span>
               <span className="due-date-count">{getAssignmentsByDueCategory('thisWeek').length}</span>
             </div>
             <div className="due-date-summary-item">
-              <span className="due-date-badge due-date-later">Later</span>
+              <span className="due-date-badge due-date-later">{translate("dueDate.summary.later")}</span>
               <span className="due-date-count">{getAssignmentsByDueCategory('later').length}</span>
             </div>
           </div>
@@ -1642,7 +1680,7 @@ export default function App() {
               {/* Pending Column */}
               <div className="kanban-column">
                 <div className="kanban-column-header">
-                  <h4 className="kanban-column-title">Pending</h4>
+                  <h4 className="kanban-column-title">{translate("kanban.pending")}</h4>
                   <span className="kanban-count">{getAllTasksByStatus("PENDING").length}</span>
                 </div>
                 <div className="kanban-column-content">
@@ -1657,7 +1695,7 @@ export default function App() {
                                 <path className="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
                               </svg>
                             </div>
-                            <div className="submission-success-text">Submitted!</div>
+                            <div className="submission-success-text">{translate("kanban.submittedSuccess")}</div>
                           </div>
                         )}
                         <div className="kanban-card-header">
@@ -1714,6 +1752,7 @@ export default function App() {
                             onDeleteSubtask={handleDeleteSubtask}
                             isLoading={loadingSubtasks[task.id] || false}
                             isAdding={addingSubtaskTaskId === task.id}
+                            translate={translate}
                           />
                           {task.status !== "SUBMITTED" && (
                             <button 
@@ -1724,23 +1763,23 @@ export default function App() {
                               {submittingTaskId === task.id ? (
                                 <>
                                   <span className="spinner-small"></span>
-                                  <span style={{ marginLeft: '0.5rem' }}>Submitting...</span>
+                                  <span style={{ marginLeft: '0.5rem' }}>{translate("kanban.submitting")}</span>
                                 </>
                               ) : (
-                                'Submit Assignment'
+                                translate("buttons.submitAssignment")
                               )}
                             </button>
                           )}
                           {task.status === "SUBMITTED" && (
                             <div className="kanban-submitted-confirmation">
-                              Submitted
+                              {translate("kanban.submittedConfirmation")}
                             </div>
                           )}
                         </div>
                       </div>
                     ))
                   ) : (
-                    <div className="kanban-empty">No pending assignments</div>
+                    <div className="kanban-empty">{translate("kanban.noPending")}</div>
                   )}
                 </div>
               </div>
@@ -1748,7 +1787,7 @@ export default function App() {
               {/* In Progress Column */}
               <div className="kanban-column">
                 <div className="kanban-column-header">
-                  <h4 className="kanban-column-title">In Progress</h4>
+                  <h4 className="kanban-column-title">{translate("kanban.inProgress")}</h4>
                   <span className="kanban-count">{getAllTasksByStatus("IN_PROGRESS").length}</span>
                 </div>
                 <div className="kanban-column-content">
@@ -1763,7 +1802,7 @@ export default function App() {
                                 <path className="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
                               </svg>
                             </div>
-                            <div className="submission-success-text">Submitted!</div>
+                            <div className="submission-success-text">{translate("kanban.submittedSuccess")}</div>
                           </div>
                         )}
                         <div className="kanban-card-header">
@@ -1820,6 +1859,7 @@ export default function App() {
                             onDeleteSubtask={handleDeleteSubtask}
                             isLoading={loadingSubtasks[task.id] || false}
                             isAdding={addingSubtaskTaskId === task.id}
+                            translate={translate}
                           />
                           {task.status !== "SUBMITTED" && (
                             <button 
@@ -1830,23 +1870,23 @@ export default function App() {
                               {submittingTaskId === task.id ? (
                                 <>
                                   <span className="spinner-small"></span>
-                                  <span style={{ marginLeft: '0.5rem' }}>Submitting...</span>
+                                  <span style={{ marginLeft: '0.5rem' }}>{translate("kanban.submitting")}</span>
                                 </>
                               ) : (
-                                'Submit Assignment'
+                                translate("buttons.submitAssignment")
                               )}
                             </button>
                           )}
                           {task.status === "SUBMITTED" && (
                             <div className="kanban-submitted-confirmation">
-                              Submitted
+                              {translate("kanban.submittedConfirmation")}
                             </div>
                           )}
                         </div>
                       </div>
                     ))
                   ) : (
-                    <div className="kanban-empty">No in-progress assignments</div>
+                    <div className="kanban-empty">{translate("kanban.noInProgress")}</div>
                   )}
                 </div>
               </div>
@@ -1854,7 +1894,7 @@ export default function App() {
               {/* Submitted Column */}
               <div className="kanban-column">
                 <div className="kanban-column-header">
-                  <h4 className="kanban-column-title">Submitted</h4>
+                  <h4 className="kanban-column-title">{translate("kanban.submitted")}</h4>
                   <span className="kanban-count">{getAllTasksByStatus("SUBMITTED").length}</span>
                 </div>
                 <div className="kanban-column-content">
@@ -1869,7 +1909,7 @@ export default function App() {
                                 <path className="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
                               </svg>
                             </div>
-                            <div className="submission-success-text">Submitted!</div>
+                            <div className="submission-success-text">{translate("kanban.submittedSuccess")}</div>
                           </div>
                         )}
                         <div className="kanban-card-header">
@@ -1920,15 +1960,16 @@ export default function App() {
                             onDeleteSubtask={handleDeleteSubtask}
                             isLoading={loadingSubtasks[task.id] || false}
                             isAdding={addingSubtaskTaskId === task.id}
+                            translate={translate}
                           />
                           <div className="kanban-submitted-confirmation">
-                            ✓ Submitted
+                            {translate("kanban.submittedCheckmark")}
                           </div>
                         </div>
                       </div>
                     ))
                   ) : (
-                    <div className="kanban-empty">No submitted assignments</div>
+                    <div className="kanban-empty">{translate("kanban.noSubmitted")}</div>
                   )}
                 </div>
               </div>
@@ -1946,6 +1987,7 @@ export default function App() {
           onClose={() => setShowAddTaskModal(false)}
           onAdd={handleAddCustomTask}
           isLoading={loadingCustomTasks}
+          translate={translate}
         />
       )}
 
@@ -1965,6 +2007,7 @@ export default function App() {
               setEditingColorCourseName(null);
             }
           }}
+          translate={translate}
         />
       )}
     </div>
@@ -1983,7 +2026,7 @@ function formatDateForModal(dateString) {
 }
 
 // Course Color Picker Modal Component
-function CourseColorPickerModal({ courseName, currentColor, onClose, onSave }) {
+function CourseColorPickerModal({ courseName, currentColor, onClose, onSave, translate }) {
   const [selectedColor, setSelectedColor] = useState(currentColor);
   const [customColor, setCustomColor] = useState(currentColor);
   const [showCustomInput, setShowCustomInput] = useState(false);
@@ -2038,12 +2081,12 @@ function CourseColorPickerModal({ courseName, currentColor, onClose, onSave }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="modal-title">Change Color for {courseName}</h2>
+          <h2 className="modal-title">{translate("modals.courseColor.title")} {courseName}</h2>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
         <div className="modal-form">
           <div className="modal-form-group">
-            <label className="modal-label">Select a color:</label>
+            <label className="modal-label">{translate("modals.courseColor.selectColor")}</label>
             <div className="color-palette">
               {colorPalette.map((color) => (
                 <button
@@ -2064,7 +2107,7 @@ function CourseColorPickerModal({ courseName, currentColor, onClose, onSave }) {
           </div>
 
           <div className="modal-form-group">
-            <label className="modal-label">Or enter custom color:</label>
+            <label className="modal-label">{translate("modals.courseColor.orEnterCustom")}</label>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
               <input
                 type="color"
@@ -2105,10 +2148,10 @@ function CourseColorPickerModal({ courseName, currentColor, onClose, onSave }) {
               {isResetting ? (
                 <>
                   <span className="spinner-small"></span>
-                  <span style={{ marginLeft: '0.5rem' }}>Resetting...</span>
+                  <span style={{ marginLeft: '0.5rem' }}>{translate("modals.courseColor.resetting")}</span>
                 </>
               ) : (
-                'Reset to Default'
+                translate("modals.courseColor.resetToDefault")
               )}
             </button>
             <button 
@@ -2117,7 +2160,7 @@ function CourseColorPickerModal({ courseName, currentColor, onClose, onSave }) {
               onClick={onClose}
               disabled={isSaving || isResetting}
             >
-              Cancel
+              {translate("common.cancel")}
             </button>
             <button 
               type="button" 
@@ -2128,10 +2171,10 @@ function CourseColorPickerModal({ courseName, currentColor, onClose, onSave }) {
               {isSaving ? (
                 <>
                   <span className="spinner-small"></span>
-                  <span style={{ marginLeft: '0.5rem' }}>Saving...</span>
+                  <span style={{ marginLeft: '0.5rem' }}>{translate("modals.courseColor.saving")}</span>
                 </>
               ) : (
-                'Save Color'
+                translate("modals.courseColor.saveColor")
               )}
             </button>
           </div>
@@ -2142,7 +2185,7 @@ function CourseColorPickerModal({ courseName, currentColor, onClose, onSave }) {
 }
 
 // Add Custom Task Modal Component
-function AddTaskModal({ courses, onClose, onAdd, isLoading }) {
+function AddTaskModal({ courses, onClose, onAdd, isLoading, translate }) {
   const [title, setTitle] = useState("");
   const [courseId, setCourseId] = useState("");
   const [courseName, setCourseName] = useState("");
@@ -2152,7 +2195,7 @@ function AddTaskModal({ courses, onClose, onAdd, isLoading }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!title.trim()) {
-      alert("Please enter a task title");
+      alert(translate("modals.addTask.pleaseEnterTitle"));
       return;
     }
 
@@ -2190,13 +2233,13 @@ function AddTaskModal({ courses, onClose, onAdd, isLoading }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="modal-title">Add Custom Task</h2>
+          <h2 className="modal-title">{translate("modals.addTask.title")}</h2>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
         <form className="modal-form" onSubmit={handleSubmit}>
           <div className="modal-form-group">
             <label htmlFor="task-title" className="modal-label">
-              Task Title *
+              {translate("modals.addTask.taskTitle")}
             </label>
             <input
               id="task-title"
@@ -2204,7 +2247,7 @@ function AddTaskModal({ courses, onClose, onAdd, isLoading }) {
               className="modal-input"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter task title..."
+              placeholder={translate("modals.addTask.enterTaskTitle")}
               required
               autoFocus
               disabled={isLoading}
@@ -2213,7 +2256,7 @@ function AddTaskModal({ courses, onClose, onAdd, isLoading }) {
 
           <div className="modal-form-group">
             <label htmlFor="task-course" className="modal-label">
-              Course
+              {translate("modals.addTask.course")}
             </label>
             <select
               id="task-course"
@@ -2222,7 +2265,7 @@ function AddTaskModal({ courses, onClose, onAdd, isLoading }) {
               onChange={handleCourseChange}
               disabled={isLoading}
             >
-              <option value="custom">Custom</option>
+              <option value="custom">{translate("modals.addTask.custom")}</option>
               {courses.map((course) => (
                 <option key={course.id} value={course.id}>
                   {course.name}
@@ -2234,7 +2277,7 @@ function AddTaskModal({ courses, onClose, onAdd, isLoading }) {
           {courseId === 'custom' && (
             <div className="modal-form-group">
               <label htmlFor="task-course-name" className="modal-label">
-                Custom Course Name
+                {translate("modals.addTask.customCourseName")}
               </label>
               <input
                 id="task-course-name"
@@ -2242,7 +2285,7 @@ function AddTaskModal({ courses, onClose, onAdd, isLoading }) {
                 className="modal-input"
                 value={courseName}
                 onChange={(e) => setCourseName(e.target.value)}
-                placeholder="Enter course name..."
+                placeholder={translate("modals.addTask.enterCourseName")}
                 disabled={isLoading}
               />
             </div>
@@ -2250,7 +2293,7 @@ function AddTaskModal({ courses, onClose, onAdd, isLoading }) {
 
           <div className="modal-form-group">
             <label htmlFor="task-due-date" className="modal-label">
-              Due Date
+              {translate("modals.addTask.dueDate")}
             </label>
             <input
               id="task-due-date"
@@ -2264,7 +2307,7 @@ function AddTaskModal({ courses, onClose, onAdd, isLoading }) {
 
           <div className="modal-form-group">
             <label htmlFor="task-status" className="modal-label">
-              Status
+              {translate("modals.addTask.status")}
             </label>
             <select
               id="task-status"
@@ -2273,24 +2316,24 @@ function AddTaskModal({ courses, onClose, onAdd, isLoading }) {
               onChange={(e) => setStatus(e.target.value)}
               disabled={isLoading}
             >
-              <option value="PENDING">Pending</option>
-              <option value="IN_PROGRESS">In Progress</option>
-              <option value="SUBMITTED">Submitted</option>
+              <option value="PENDING">{translate("modals.addTask.pending")}</option>
+              <option value="IN_PROGRESS">{translate("modals.addTask.inProgress")}</option>
+              <option value="SUBMITTED">{translate("modals.addTask.submitted")}</option>
             </select>
           </div>
 
           <div className="modal-actions">
             <button type="button" className="btn btn-secondary" onClick={onClose} disabled={isLoading}>
-              Cancel
+              {translate("common.cancel")}
             </button>
             <button type="submit" className="btn btn-primary" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <span className="spinner-small"></span>
-                  <span style={{ marginLeft: '0.5rem' }}>Creating...</span>
+                  <span style={{ marginLeft: '0.5rem' }}>{translate("modals.addTask.creating")}</span>
                 </>
               ) : (
-                'Add Task'
+                translate("modals.addTask.addTask")
               )}
             </button>
           </div>

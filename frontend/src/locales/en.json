@@ -1,0 +1,168 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "add": "Add",
+    "close": "Close",
+    "submit": "Submit",
+    "refresh": "Refresh",
+    "disconnect": "Disconnect",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "thisWeek": "This Week",
+    "later": "Later",
+    "upcoming": "Upcoming",
+    "noData": "No data",
+    "unknown": "Unknown"
+  },
+  "app": {
+    "title": "Google Classroom Connection",
+    "subtitle": "Connect and manage your Google Classroom data"
+  },
+  "connection": {
+    "connected": "Connected to Google Classroom",
+    "notConnected": "Not Connected",
+    "usingMockData": "Using Mock Data"
+  },
+  "buttons": {
+    "connectWithGoogle": "Connect with Google",
+    "refreshData": "Refresh Data",
+    "switchToMockData": "Switch to Mock Data",
+    "switchToGoogleClassroom": "Switch to Google Classroom",
+    "reloadMockData": "Reload Mock Data",
+    "tutorParentView": "Tutor/Parent View",
+    "studentView": "Student View",
+    "addCustomTask": "+ Add Custom Task",
+    "submitAssignment": "Submit Assignment",
+    "changeCourseColor": "Change course color",
+    "deleteCustomTask": "Delete custom task",
+    "deleteSubtask": "Delete subtask"
+  },
+  "subtasks": {
+    "title": "Subtasks",
+    "addSubtask": "Add subtask",
+    "close": "Close",
+    "enterSubtask": "Enter subtask...",
+    "adding": "Adding...",
+    "loading": "Loading subtasks...",
+    "noSubtasks": "No subtasks"
+  },
+  "courses": {
+    "title": "Courses",
+    "loading": "Loading courses...",
+    "noData": "No data yet. Refresh after connecting to load your courses.",
+    "noCourseWork": "No course work found",
+    "loadingCourseWork": "Loading course work...",
+    "loadingSubmissions": "Loading submissions...",
+    "noSubmissions": "No submissions found",
+    "section": "Section"
+  },
+  "courseWork": {
+    "due": "Due",
+    "status": "Status",
+    "notSubmitted": "Not Submitted",
+    "submitted": "Submitted",
+    "returned": "Returned"
+  },
+  "kanban": {
+    "title": "Assignment Dashboard",
+    "pending": "Pending",
+    "inProgress": "In Progress",
+    "submitted": "Submitted",
+    "noPending": "No pending assignments",
+    "noInProgress": "No in-progress assignments",
+    "noSubmitted": "No submitted assignments",
+    "submittedConfirmation": "Submitted",
+    "submittedCheckmark": "✓ Submitted",
+    "submitting": "Submitting...",
+    "submittedSuccess": "Submitted!"
+  },
+  "dueDate": {
+    "summary": {
+      "today": "Today",
+      "thisWeek": "This Week",
+      "later": "Later"
+    },
+    "indicator": {
+      "today": "Today",
+      "thisWeek": "This Week",
+      "later": "Later"
+    },
+    "badge": {
+      "dueToday": "Due Today",
+      "thisWeek": "This Week",
+      "upcoming": "Upcoming"
+    }
+  },
+  "tutorView": {
+    "title": "Student Progress Dashboard",
+    "subtitle": "Quick overview of assignments and progress",
+    "overallProgress": "Overall Progress",
+    "stillWorkingOn": "Still Working On",
+    "dueToday": "Due Today",
+    "dueThisWeek": "Due This Week",
+    "assignments": "assignments",
+    "completed": "completed",
+    "assignmentsInProgress": "Assignments in Progress",
+    "allClear": "All clear! No assignments in progress right now.",
+    "upcomingDeadlines": "Upcoming Deadlines",
+    "greatNews": "Great news! No upcoming deadlines in the next two weeks.",
+    "recentlySubmittedWork": "Recently Submitted Work",
+    "noRecentSubmissions": "No assignments submitted recently.",
+    "notStartedYet": "Not started yet",
+    "currentlyWorking": "Currently working on this",
+    "days": "days",
+    "day": "day",
+    "noDate": "No date"
+  },
+  "modals": {
+    "addTask": {
+      "title": "Add Custom Task",
+      "taskTitle": "Task Title *",
+      "enterTaskTitle": "Enter task title...",
+      "course": "Course",
+      "custom": "Custom",
+      "customCourseName": "Custom Course Name",
+      "enterCourseName": "Enter course name...",
+      "dueDate": "Due Date",
+      "status": "Status",
+      "pending": "Pending",
+      "inProgress": "In Progress",
+      "submitted": "Submitted",
+      "creating": "Creating...",
+      "addTask": "Add Task",
+      "pleaseEnterTitle": "Please enter a task title"
+    },
+    "courseColor": {
+      "title": "Change Color for",
+      "selectColor": "Select a color:",
+      "orEnterCustom": "Or enter custom color:",
+      "resetToDefault": "Reset to Default",
+      "resetting": "Resetting...",
+      "saving": "Saving...",
+      "saveColor": "Save Color"
+    },
+    "deleteTask": {
+      "confirm": "Are you sure you want to delete this task? This action cannot be undone.",
+      "disconnectConfirm": "Are you sure you want to disconnect and clear all data?"
+    }
+  },
+  "errors": {
+    "failedToCreateTask": "Failed to create task:",
+    "failedToDeleteTask": "Failed to delete task:",
+    "unknownError": "Unknown error",
+    "tryAgain": "Please try again."
+  },
+  "status": {
+    "PENDING": "Pending",
+    "IN_PROGRESS": "In Progress",
+    "SUBMITTED": "Submitted",
+    "TURNED_IN": "Submitted",
+    "RETURNED": "Returned",
+    "NEW": "Not Submitted"
+  }
+}
+

@@ -1,0 +1,168 @@
+{
+  "common": {
+    "loading": "Carregant...",
+    "error": "Error",
+    "cancel": "Cancel·lar",
+    "save": "Desar",
+    "delete": "Eliminar",
+    "add": "Afegir",
+    "close": "Tancar",
+    "submit": "Enviar",
+    "refresh": "Actualitzar",
+    "disconnect": "Desconnectar",
+    "today": "Avui",
+    "tomorrow": "Demà",
+    "thisWeek": "Aquesta setmana",
+    "later": "Més tard",
+    "upcoming": "Properament",
+    "noData": "Sense dades",
+    "unknown": "Desconegut"
+  },
+  "app": {
+    "title": "Connexió amb Google Classroom",
+    "subtitle": "Connecta i gestiona les teves dades de Google Classroom"
+  },
+  "connection": {
+    "connected": "Connectat a Google Classroom",
+    "notConnected": "No connectat",
+    "usingMockData": "Utilitzant dades de prova"
+  },
+  "buttons": {
+    "connectWithGoogle": "Connectar amb Google",
+    "refreshData": "Actualitzar dades",
+    "switchToMockData": "Canviar a dades de prova",
+    "switchToGoogleClassroom": "Canviar a Google Classroom",
+    "reloadMockData": "Recarregar dades de prova",
+    "tutorParentView": "Vista de Tutor/Pare",
+    "studentView": "Vista d'Estudiant",
+    "addCustomTask": "+ Afegir tasca personalitzada",
+    "submitAssignment": "Enviar tasca",
+    "changeCourseColor": "Canviar color del curs",
+    "deleteCustomTask": "Eliminar tasca personalitzada",
+    "deleteSubtask": "Eliminar subtasca"
+  },
+  "subtasks": {
+    "title": "Subtasques",
+    "addSubtask": "Afegir subtasca",
+    "close": "Tancar",
+    "enterSubtask": "Introdueix subtasca...",
+    "adding": "Afegint...",
+    "loading": "Carregant subtasques...",
+    "noSubtasks": "Sense subtasques"
+  },
+  "courses": {
+    "title": "Cursos",
+    "loading": "Carregant cursos...",
+    "noData": "Encara no hi ha dades. Actualitza després de connectar per carregar els teus cursos.",
+    "noCourseWork": "No s'ha trobat feina del curs",
+    "loadingCourseWork": "Carregant feina del curs...",
+    "loadingSubmissions": "Carregant entregues...",
+    "noSubmissions": "No s'han trobat entregues",
+    "section": "Secció"
+  },
+  "courseWork": {
+    "due": "Data límit",
+    "status": "Estat",
+    "notSubmitted": "No entregat",
+    "submitted": "Entregat",
+    "returned": "Retornat"
+  },
+  "kanban": {
+    "title": "Taulell de tasques",
+    "pending": "Pendent",
+    "inProgress": "En curs",
+    "submitted": "Entregat",
+    "noPending": "No hi ha tasques pendents",
+    "noInProgress": "No hi ha tasques en curs",
+    "noSubmitted": "No hi ha tasques entregades",
+    "submittedConfirmation": "Entregat",
+    "submittedCheckmark": "✓ Entregat",
+    "submitting": "Enviant...",
+    "submittedSuccess": "Entregat!"
+  },
+  "dueDate": {
+    "summary": {
+      "today": "Avui",
+      "thisWeek": "Aquesta setmana",
+      "later": "Més tard"
+    },
+    "indicator": {
+      "today": "Avui",
+      "thisWeek": "Aquesta setmana",
+      "later": "Més tard"
+    },
+    "badge": {
+      "dueToday": "Límit avui",
+      "thisWeek": "Aquesta setmana",
+      "upcoming": "Properament"
+    }
+  },
+  "tutorView": {
+    "title": "Taulell de progrés de l'estudiant",
+    "subtitle": "Visió ràpida de les tasques i el progrés",
+    "overallProgress": "Progrés general",
+    "stillWorkingOn": "Encara treballant",
+    "dueToday": "Límit avui",
+    "dueThisWeek": "Límit aquesta setmana",
+    "assignments": "tasques",
+    "completed": "completades",
+    "assignmentsInProgress": "Tasques en curs",
+    "allClear": "Tot clar! No hi ha tasques en curs ara mateix.",
+    "upcomingDeadlines": "Terminis propers",
+    "greatNews": "Bones notícies! No hi ha terminis propers en les properes dues setmanes.",
+    "recentlySubmittedWork": "Feina entregada recentment",
+    "noRecentSubmissions": "No s'han entregat tasques recentment.",
+    "notStartedYet": "Encara no s'ha començat",
+    "currentlyWorking": "Treballant-hi actualment",
+    "days": "dies",
+    "day": "dia",
+    "noDate": "Sense data"
+  },
+  "modals": {
+    "addTask": {
+      "title": "Afegir tasca personalitzada",
+      "taskTitle": "Títol de la tasca *",
+      "enterTaskTitle": "Introdueix el títol de la tasca...",
+      "course": "Curs",
+      "custom": "Personalitzat",
+      "customCourseName": "Nom del curs personalitzat",
+      "enterCourseName": "Introdueix el nom del curs...",
+      "dueDate": "Data límit",
+      "status": "Estat",
+      "pending": "Pendent",
+      "inProgress": "En curs",
+      "submitted": "Entregat",
+      "creating": "Creant...",
+      "addTask": "Afegir tasca",
+      "pleaseEnterTitle": "Si us plau, introdueix un títol per a la tasca"
+    },
+    "courseColor": {
+      "title": "Canviar color per a",
+      "selectColor": "Selecciona un color:",
+      "orEnterCustom": "O introdueix un color personalitzat:",
+      "resetToDefault": "Restablir per defecte",
+      "resetting": "Restablint...",
+      "saving": "Desant...",
+      "saveColor": "Desar color"
+    },
+    "deleteTask": {
+      "confirm": "Estàs segur que vols eliminar aquesta tasca? Aquesta acció no es pot desfer.",
+      "disconnectConfirm": "Estàs segur que vols desconnectar i esborrar totes les dades?"
+    }
+  },
+  "errors": {
+    "failedToCreateTask": "Error en crear la tasca:",
+    "failedToDeleteTask": "Error en eliminar la tasca:",
+    "unknownError": "Error desconegut",
+    "tryAgain": "Si us plau, torna-ho a intentar."
+  },
+  "status": {
+    "PENDING": "Pendent",
+    "IN_PROGRESS": "En curs",
+    "SUBMITTED": "Entregat",
+    "TURNED_IN": "Entregat",
+    "RETURNED": "Retornat",
+    "NEW": "No entregat"
+  }
+}
+
