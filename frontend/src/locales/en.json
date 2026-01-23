@@ -48,7 +48,10 @@
     "enterSubtask": "Enter subtask...",
     "adding": "Adding...",
     "loading": "Loading subtasks...",
-    "noSubtasks": "No subtasks"
+    "noSubtasks": "No subtasks",
+    "generateAI": "Generate with AI",
+    "generateWithAI": "Generate subtasks with artificial intelligence",
+    "generating": "Generating..."
   },
   "courses": {
     "title": "Courses",
@@ -153,6 +156,8 @@
   "errors": {
     "failedToCreateTask": "Failed to create task:",
     "failedToDeleteTask": "Failed to delete task:",
+    "failedToGenerateSubtasks": "Failed to generate subtasks with AI",
+    "taskTitleRequired": "Task title is required",
     "unknownError": "Unknown error",
     "tryAgain": "Please try again."
   },

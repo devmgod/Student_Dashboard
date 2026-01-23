@@ -5,7 +5,7 @@ import { t, setLanguage, getInitialLanguage, languageNames } from "./i18n";
 const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // Subtasks Component
-function TaskSubtasks({ taskId, subtasks, onAddSubtask, onToggleSubtask, onDeleteSubtask, isLoading, isAdding, translate }) {
+function TaskSubtasks({ taskId, subtasks, onAddSubtask, onToggleSubtask, onDeleteSubtask, isLoading, isAdding, isGeneratingAI, onGenerateAI, taskTitle, courseName, translate }) {
   const [newSubtaskText, setNewSubtaskText] = useState("");
   const [showAddSubtask, setShowAddSubtask] = useState(false);
 
@@ -28,6 +28,25 @@ function TaskSubtasks({ taskId, subtasks, onAddSubtask, onToggleSubtask, onDelet
           <span className="task-subtasks-count">
             {completedCount} / {totalCount}
           </span>
+        )}
+        {onGenerateAI && (
+          <button
+            className="btn-generate-ai-subtasks"
+            onClick={() => onGenerateAI(taskId, taskTitle, courseName)}
+            disabled={isGeneratingAI || isLoading}
+            title={translate("subtasks.generateWithAI") || "Generar subtasques amb IA"}
+          >
+            {isGeneratingAI ? (
+              <>
+                <span className="spinner-small"></span>
+                <span style={{ marginLeft: '0.5rem' }}>{translate("subtasks.generating") || "Generant..."}</span>
+              </>
+            ) : (
+              <>
+                ✨ {translate("subtasks.generateAI") || "Generar amb IA"}
+              </>
+            )}
+          </button>
         )}
         <button
           className={`btn-add-subtask ${showAddSubtask ? 'btn-add-subtask-open' : ''}`}
@@ -181,6 +200,7 @@ export default function App() {
   const [deletingTaskId, setDeletingTaskId] = useState(null); // Track which task is being deleted
   const [loadingSubtasks, setLoadingSubtasks] = useState({}); // { taskId: true/false }
   const [addingSubtaskTaskId, setAddingSubtaskTaskId] = useState(null); // Track which task is adding a subtask
+  const [generatingAISubtasksTaskId, setGeneratingAISubtasksTaskId] = useState(null); // Track which task is generating AI subtasks
   const [submittingTaskId, setSubmittingTaskId] = useState(null); // Track which task is being submitted
   const [courseColors, setCourseColors] = useState({}); // { courseName: color }
   const [editingColorCourseName, setEditingColorCourseName] = useState(null); // Track which course color is being edited
@@ -1169,6 +1189,47 @@ export default function App() {
     }
   }
 
+  // Function to generate subtasks using AI
+  async function handleGenerateAISubtasks(taskId, taskTitle, courseName) {
+    if (!taskTitle) {
+      alert(translate("errors.taskTitleRequired") || "Task title is required");
+      return;
+    }
+
+    setGeneratingAISubtasksTaskId(taskId);
+    try {
+      const res = await fetch(`${API}/api/tasks/${taskId}/generate-subtasks`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: taskTitle,
+          courseName: courseName || null,
+          description: null, // Can be extended later if task descriptions are available
+        }),
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        // Reload subtasks to show the newly generated ones
+        await loadSubtasks(taskId);
+        // Show success message
+        if (result.subtasks && result.subtasks.length > 0) {
+          console.log(`Generated ${result.subtasks.length} subtasks`);
+        }
+      } else {
+        const error = await res.json();
+        alert(error.error || translate("errors.failedToGenerateSubtasks") || "Failed to generate subtasks");
+      }
+    } catch (error) {
+      console.error("Error generating AI subtasks:", error);
+      alert(translate("errors.failedToGenerateSubtasks") || "Failed to generate subtasks. Please try again.");
+    } finally {
+      setGeneratingAISubtasksTaskId(null);
+    }
+  }
+
   // Function to delete a custom task
   async function handleDeleteCustomTask(taskId) {
     if (!window.confirm(translate("modals.deleteTask.confirm"))) {
@@ -1861,6 +1922,10 @@ export default function App() {
                             onDeleteSubtask={handleDeleteSubtask}
                             isLoading={loadingSubtasks[task.id] || false}
                             isAdding={addingSubtaskTaskId === task.id}
+                            isGeneratingAI={generatingAISubtasksTaskId === task.id}
+                            onGenerateAI={handleGenerateAISubtasks}
+                            taskTitle={task.title}
+                            courseName={task.courseName}
                             translate={translate}
                           />
                         </div>
@@ -1956,6 +2021,10 @@ export default function App() {
                             onDeleteSubtask={handleDeleteSubtask}
                             isLoading={loadingSubtasks[task.id] || false}
                             isAdding={addingSubtaskTaskId === task.id}
+                            isGeneratingAI={generatingAISubtasksTaskId === task.id}
+                            onGenerateAI={handleGenerateAISubtasks}
+                            taskTitle={task.title}
+                            courseName={task.courseName}
                             translate={translate}
                           />
                         </div>
@@ -2042,6 +2111,10 @@ export default function App() {
                             onDeleteSubtask={handleDeleteSubtask}
                             isLoading={loadingSubtasks[task.id] || false}
                             isAdding={addingSubtaskTaskId === task.id}
+                            isGeneratingAI={generatingAISubtasksTaskId === task.id}
+                            onGenerateAI={handleGenerateAISubtasks}
+                            taskTitle={task.title}
+                            courseName={task.courseName}
                             translate={translate}
                           />
                           <div className="kanban-submitted-confirmation">

@@ -38,6 +38,7 @@ function initDatabase() {
     `);
 
     // Subtasks table
+    // Note: No foreign key constraint to allow subtasks for both custom tasks and Google Classroom tasks
     db.exec(`
       CREATE TABLE IF NOT EXISTS subtasks (
         id TEXT PRIMARY KEY,
@@ -45,10 +46,54 @@ function initDatabase() {
         text TEXT NOT NULL,
         completed INTEGER NOT NULL DEFAULT 0,
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
-        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-        FOREIGN KEY (task_id) REFERENCES custom_tasks(id) ON DELETE CASCADE
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
       )
     `);
+
+    // If the existing subtasks table was created with a foreign key constraint,
+    // migrate it to a new table without the FK so we can also store subtasks
+    // for Google Classroom tasks (which don't live in custom_tasks).
+    try {
+      const fkListStmt = db.prepare("PRAGMA foreign_key_list(subtasks)");
+      const fkList = fkListStmt.all();
+
+      if (fkList && fkList.length > 0) {
+        console.log('Migrating subtasks table to remove foreign key constraint...');
+
+        // Temporarily disable FK checks during migration
+        db.pragma('foreign_keys = OFF');
+
+        db.exec(`
+          CREATE TABLE IF NOT EXISTS subtasks_migration (
+            id TEXT PRIMARY KEY,
+            task_id TEXT NOT NULL,
+            text TEXT NOT NULL,
+            completed INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+          )
+        `);
+
+        // Copy existing data
+        db.exec(`
+          INSERT INTO subtasks_migration (id, task_id, text, completed, created_at, updated_at)
+          SELECT id, task_id, text, completed, created_at, updated_at FROM subtasks
+        `);
+
+        // Replace old table
+        db.exec(`DROP TABLE subtasks`);
+        db.exec(`ALTER TABLE subtasks_migration RENAME TO subtasks`);
+
+        // Re‑enable FK checks
+        db.pragma('foreign_keys = ON');
+
+        console.log('Subtasks table migration completed.');
+      }
+    } catch (migrationError) {
+      console.error('Error while checking/migrating subtasks table:', migrationError);
+      // Make sure foreign_keys is turned back on even if something went wrong
+      db.pragma('foreign_keys = ON');
+    }
 
     // Course Colors table (stores user preferences for course colors by course name)
     db.exec(`
