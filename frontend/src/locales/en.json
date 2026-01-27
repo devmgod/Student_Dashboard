@@ -81,7 +81,8 @@
     "submittedConfirmation": "Submitted",
     "submittedCheckmark": "✓ Submitted",
     "submitting": "Submitting...",
-    "submittedSuccess": "Submitted!"
+    "submittedSuccess": "Submitted!",
+    "clickToMove": "Click to move"
   },
   "dueDate": {
     "summary": {

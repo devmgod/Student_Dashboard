@@ -5,7 +5,7 @@ import { t, setLanguage, getInitialLanguage, languageNames } from "./i18n";
 const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // Subtasks Component
-function TaskSubtasks({ taskId, subtasks, onAddSubtask, onToggleSubtask, onDeleteSubtask, isLoading, isAdding, isGeneratingAI, onGenerateAI, taskTitle, courseName, translate }) {
+function TaskSubtasks({ taskId, subtasks, onAddSubtask, onToggleSubtask, onDeleteSubtask, isLoading, isAdding, isGeneratingAI, onGenerateAI, taskTitle, courseName, description, translate }) {
   const [newSubtaskText, setNewSubtaskText] = useState("");
   const [showAddSubtask, setShowAddSubtask] = useState(false);
 
@@ -32,7 +32,7 @@ function TaskSubtasks({ taskId, subtasks, onAddSubtask, onToggleSubtask, onDelet
         {onGenerateAI && (
           <button
             className="btn-generate-ai-subtasks"
-            onClick={() => onGenerateAI(taskId, taskTitle, courseName)}
+            onClick={() => onGenerateAI(taskId, taskTitle, courseName, description)}
             disabled={isGeneratingAI || isLoading}
             title={translate("subtasks.generateWithAI") || "Generar subtasques amb IA"}
           >
@@ -744,6 +744,7 @@ export default function App() {
         dueDate: assignment.dueDate,
         dueText: assignment.dueText,
         status: assignment.status,
+        description: assignment.description || null,
         isCustom: false,
       }));
       // Add custom tasks
@@ -764,6 +765,7 @@ export default function App() {
             dueDate: assignment.dueDate,
             dueText: assignment.dueText,
             status: assignment.status,
+            description: assignment.description || null,
             isCustom: false,
           });
         });
@@ -1086,7 +1088,7 @@ export default function App() {
         body: JSON.stringify({
           title: taskData.title,
           courseId: taskData.courseId || 'custom',
-          courseName: taskData.courseName || 'Custom',
+          courseName: taskData.courseName || translate("modals.addTask.custom"),
           dueDate: taskData.dueDate || null,
           dueText: taskData.dueText || null,
           status: taskData.status || 'PENDING',
@@ -1190,7 +1192,7 @@ export default function App() {
   }
 
   // Function to generate subtasks using AI
-  async function handleGenerateAISubtasks(taskId, taskTitle, courseName) {
+  async function handleGenerateAISubtasks(taskId, taskTitle, courseName, description) {
     if (!taskTitle) {
       alert(translate("errors.taskTitleRequired") || "Task title is required");
       return;
@@ -1206,7 +1208,7 @@ export default function App() {
         body: JSON.stringify({
           title: taskTitle,
           courseName: courseName || null,
-          description: null, // Can be extended later if task descriptions are available
+          description: description || null,
         }),
       });
 
@@ -1852,7 +1854,7 @@ export default function App() {
                         className={`kanban-card-item ${recentlySubmitted.has(task.id) ? 'just-submitted' : ''}`}
                         onClick={(e) => handleTaskStatusClick(task.id, e)}
                         style={{ cursor: 'pointer' }}
-                        title={translate("kanban.clickToMove") || "Click to move to 'Doing'"}
+                        title={translate("kanban.clickToMove")}
                       >
                         {recentlySubmitted.has(task.id) && (
                           <div className="submission-checkmark-overlay">
@@ -1878,9 +1880,9 @@ export default function App() {
                           </span>
                           {task.status !== "SUBMITTED" && getDueDateCategory(task.dueDate) && (
                             <span className={`due-date-indicator due-date-indicator-${getDueDateCategory(task.dueDate)}`}>
-                              {getDueDateCategory(task.dueDate) === 'today' ? 'Today' : 
-                               getDueDateCategory(task.dueDate) === 'thisWeek' ? 'This Week' : 
-                               'Later'}
+                              {getDueDateCategory(task.dueDate) === 'today' ? translate("dueDate.indicator.today") : 
+                               getDueDateCategory(task.dueDate) === 'thisWeek' ? translate("dueDate.indicator.thisWeek") : 
+                               translate("dueDate.indicator.later")}
                             </span>
                           )}
                           {task.isCustom && (
@@ -1890,7 +1892,7 @@ export default function App() {
                                 e.stopPropagation();
                                 handleDeleteCustomTask(task.id);
                               }}
-                              title="Delete custom task"
+                              title={translate("buttons.deleteCustomTask")}
                               disabled={deletingTaskId === task.id}
                             >
                               {deletingTaskId === task.id ? (
@@ -1905,12 +1907,12 @@ export default function App() {
                           <h5 className="kanban-card-title">{task.title}</h5>
                           {task.dueText && (
                             <div className="kanban-card-due">
-                              <strong>Due:</strong> {task.dueText}
+                              <strong>{translate("courseWork.due")}:</strong> {task.dueText}
                             </div>
                           )}
                           {task.dueDate && !task.dueText && (
                             <div className="kanban-card-due">
-                              <strong>Due:</strong> {formatDate(task.dueDate)}
+                              <strong>{translate("courseWork.due")}:</strong> {formatDate(task.dueDate)}
                             </div>
                           )}
                           {/* Subtasks Section */}
@@ -1926,6 +1928,7 @@ export default function App() {
                             onGenerateAI={handleGenerateAISubtasks}
                             taskTitle={task.title}
                             courseName={task.courseName}
+                            description={task.description}
                             translate={translate}
                           />
                         </div>
@@ -1951,7 +1954,7 @@ export default function App() {
                         className={`kanban-card-item ${recentlySubmitted.has(task.id) ? 'just-submitted' : ''}`}
                         onClick={(e) => handleTaskStatusClick(task.id, e)}
                         style={{ cursor: 'pointer' }}
-                        title={translate("kanban.clickToMove") || "Click to move to 'Done'"}
+                        title={translate("kanban.clickToMove")}
                       >
                         {recentlySubmitted.has(task.id) && (
                           <div className="submission-checkmark-overlay">
@@ -1977,9 +1980,9 @@ export default function App() {
                           </span>
                           {task.status !== "SUBMITTED" && getDueDateCategory(task.dueDate) && (
                             <span className={`due-date-indicator due-date-indicator-${getDueDateCategory(task.dueDate)}`}>
-                              {getDueDateCategory(task.dueDate) === 'today' ? 'Today' : 
-                               getDueDateCategory(task.dueDate) === 'thisWeek' ? 'This Week' : 
-                               'Later'}
+                              {getDueDateCategory(task.dueDate) === 'today' ? translate("dueDate.indicator.today") : 
+                               getDueDateCategory(task.dueDate) === 'thisWeek' ? translate("dueDate.indicator.thisWeek") : 
+                               translate("dueDate.indicator.later")}
                             </span>
                           )}
                           {task.isCustom && (
@@ -1989,7 +1992,7 @@ export default function App() {
                                 e.stopPropagation();
                                 handleDeleteCustomTask(task.id);
                               }}
-                              title="Delete custom task"
+                              title={translate("buttons.deleteCustomTask")}
                               disabled={deletingTaskId === task.id}
                             >
                               {deletingTaskId === task.id ? (
@@ -2004,12 +2007,12 @@ export default function App() {
                           <h5 className="kanban-card-title">{task.title}</h5>
                           {task.dueText && (
                             <div className="kanban-card-due">
-                              <strong>Due:</strong> {task.dueText}
+                              <strong>{translate("courseWork.due")}:</strong> {task.dueText}
                             </div>
                           )}
                           {task.dueDate && !task.dueText && (
                             <div className="kanban-card-due">
-                              <strong>Due:</strong> {formatDate(task.dueDate)}
+                              <strong>{translate("courseWork.due")}:</strong> {formatDate(task.dueDate)}
                             </div>
                           )}
                           {/* Subtasks Section */}
@@ -2025,6 +2028,7 @@ export default function App() {
                             onGenerateAI={handleGenerateAISubtasks}
                             taskTitle={task.title}
                             courseName={task.courseName}
+                            description={task.description}
                             translate={translate}
                           />
                         </div>
@@ -2078,7 +2082,7 @@ export default function App() {
                                 e.stopPropagation();
                                 handleDeleteCustomTask(task.id);
                               }}
-                              title="Delete custom task"
+                              title={translate("buttons.deleteCustomTask")}
                               disabled={deletingTaskId === task.id}
                             >
                               {deletingTaskId === task.id ? (
@@ -2094,12 +2098,12 @@ export default function App() {
                           <h5 className="kanban-card-title">{task.title}</h5>
                           {task.dueText && (
                             <div className="kanban-card-due">
-                              <strong>Due:</strong> {task.dueText}
+                              <strong>{translate("courseWork.due")}:</strong> {task.dueText}
                             </div>
                           )}
                           {task.dueDate && !task.dueText && (
                             <div className="kanban-card-due">
-                              <strong>Due:</strong> {formatDate(task.dueDate)}
+                              <strong>{translate("courseWork.due")}:</strong> {formatDate(task.dueDate)}
                             </div>
                           )}
                           {/* Subtasks Section */}
@@ -2115,6 +2119,7 @@ export default function App() {
                             onGenerateAI={handleGenerateAISubtasks}
                             taskTitle={task.title}
                             courseName={task.courseName}
+                            description={task.description}
                             translate={translate}
                           />
                           <div className="kanban-submitted-confirmation">
@@ -2357,7 +2362,7 @@ function AddTaskModal({ courses, onClose, onAdd, isLoading, translate }) {
     const taskData = {
       title: title.trim(),
       courseId: courseId || 'custom',
-      courseName: courseName || 'Custom',
+      courseName: courseName || translate("modals.addTask.custom"),
       dueDate: dueDate || null,
       dueText: dueDate ? formatDateForModal(dueDate) : null,
       status: status,

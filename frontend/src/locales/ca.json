@@ -83,7 +83,8 @@
     "submittedConfirmation": "Entregat",
     "submittedCheckmark": "✓ Entregat",
     "submitting": "Entregant...",
-    "submittedSuccess": "Fet!"
+    "submittedSuccess": "Fet!",
+    "clickToMove": "Fes clic per moure"
   },
   "dueDate": {
     "summary": {
@@ -129,7 +130,7 @@
       "taskTitle": "Títol de la tasca *",
       "enterTaskTitle": "Escriu el títol...",
       "course": "Assignatura",
-      "custom": "Personalitzat",
+      "custom": "Tasca",
       "customCourseName": "Nom de l'assignatura",
       "enterCourseName": "Escriu l'assignatura...",
       "dueDate": "Data d'entrega",
