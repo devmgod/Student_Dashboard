@@ -1041,6 +1041,9 @@ export default function App() {
         }
         // Auto-load data
         await load();
+      } else {
+        // If not authenticated, auto-load mock data for demo/testing
+        loadMockData();
       }
     };
     
