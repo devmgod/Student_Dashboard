@@ -1,0 +1,41 @@
+# Render Blueprint Configuration
+# This file helps configure your services on Render.com
+# You can use this to deploy both services at once, or configure them manually
+
+services:
+  # Backend Web Service
+  - type: web
+    name: student-dashboard-backend
+    env: node
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      # Add these environment variables in Render dashboard:
+      # - GOOGLE_CLIENT_ID
+      # - GOOGLE_CLIENT_SECRET
+      # - GOOGLE_REDIRECT_URI (update after deployment)
+      # - OPENAI_API_KEY (optional)
+      # - FRONTEND_URL (update after frontend deployment)
+
+  # Frontend Static Site
+  - type: web
+    name: student-dashboard-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      # Add VITE_API_URL in Render dashboard after backend is deployed
+      - key: VITE_API_URL
+        value: https://YOUR_BACKEND_URL.onrender.com
+
+# Optional: PostgreSQL Database
+# Uncomment if you want to use PostgreSQL instead of SQLite
+# databases:
+#   - name: student-dashboard-db
+#     databaseName: student_dashboard
+#     user: student_dashboard_user
+

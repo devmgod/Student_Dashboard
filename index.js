@@ -595,10 +595,11 @@ app.get("/api/test-openai-key", async (req, res) => {
   }
 });
 
-app.listen(4000, () => {
-  console.log("Server running on http://localhost:4000");
-  console.log("Start OAuth: http://localhost:4000/auth/google");
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Start OAuth: http://localhost:${PORT}/auth/google`);
   if (openai) {
-    console.log("OpenAI API key is configured. Test it at: http://localhost:4000/api/test-openai-key");
+    console.log(`OpenAI API key is configured. Test it at: http://localhost:${PORT}/api/test-openai-key`);
   }
 });
